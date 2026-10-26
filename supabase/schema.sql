@@ -50,7 +50,7 @@ CREATE TABLE questions (
   answers_count INTEGER DEFAULT 0,
   views_count INTEGER DEFAULT 0,
   answered BOOLEAN DEFAULT FALSE,
-  accepted_answer_id UUID REFERENCES answers(id),
+  accepted_answer_id UUID,  -- FK added later after answers table exists
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -66,6 +66,11 @@ CREATE TABLE answers (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add circular FK constraint: questions.accepted_answer_id -> answers(id)
+ALTER TABLE questions 
+  ADD CONSTRAINT fk_questions_accepted_answer 
+  FOREIGN KEY (accepted_answer_id) REFERENCES answers(id);
 
 -- Follows table
 CREATE TABLE follows (

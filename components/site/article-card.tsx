@@ -7,10 +7,10 @@ import { Article, formatDate, getMember, getCategory } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
 const typeLabel: Record<Article['type'], string> = {
-  guide: 'Practical Guide',
-  research: 'Research',
-  'case-study': 'Case Study',
-  tutorial: 'Tutorial',
+  guide: 'Guide pratique',
+  research: 'Recherche',
+  'case-study': 'Étude de cas',
+  tutorial: 'Tutoriel',
   article: 'Article',
 };
 
@@ -39,7 +39,7 @@ export function ArticleCard({ article, className }: { article: Article; classNam
             <span className="text-accent font-medium">{category?.name.split(' & ')[0]}</span>
             {article.evidenceBased && (
               <Badge variant="outline" className="text-[10px] py-0 px-1.5 gap-0.5 border-accent/30 text-accent">
-                <BadgeCheck size={11} /> Evidence-based
+                <BadgeCheck size={11} /> Basé sur des preuves
               </Badge>
             )}
           </div>
@@ -86,4 +86,4 @@ export function ArticleListItem({ article }: { article: Article }) {
       <ArrowUpRight size={18} className="text-muted-foreground shrink-0 mt-1 opacity-0 group-hover:opacity-100 group-hover:text-primary transition-all" />
     </Link>
   );
-}
+};

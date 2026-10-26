@@ -11,12 +11,12 @@ import { MemberAvatarRow } from '@/components/site/member-card';
 import { videos, articles, members, questions, formatCount } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
-const types = ['All', 'Videos', 'Articles', 'Members', 'Questions'];
-const trendingTopics = ['soil microbiome', 'drip irrigation', 'NDVI', 'greenhouse ventilation', 'cover crops', 'early blight'];
+const types = ['Tout', 'Vidéos', 'Articles', 'Membres', 'Questions'];
+const trendingTopics = ['microbiome du sol', 'irrigation goutte-à-goutte', 'NDVI', ' ventilation des serres', 'cultures couvrantes', 'tavelure précoce'];
 
 export default function SearchPage() {
   const [query, setQuery] = useState('');
-  const [type, setType] = useState('All');
+  const [type, setType] = useState('Tout');
 
   const results = useMemo(() => {
     if (!query.trim()) return null;
@@ -33,14 +33,14 @@ export default function SearchPage() {
 
   return (
     <div className="container-px mx-auto max-w-5xl py-10">
-      <h1 className="font-display text-3xl lg:text-4xl font-semibold tracking-tight mb-2">Search</h1>
-      <p className="text-muted-foreground mb-6">Find videos, articles, members, and discussions across Lycium Lab.</p>
+      <h1 className="font-display text-3xl lg:text-4xl font-semibold tracking-tight mb-2">Recherche</h1>
+      <p className="text-muted-foreground mb-6">Trouvez des vidéos, des articles, des membres et des discussions à travers Lycium Lab.</p>
 
       <div className="relative mb-6">
         <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <Input
           autoFocus
-          placeholder="Search across everything..."
+          placeholder="Rechercher partout..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="pl-12 h-14 text-base"
@@ -55,7 +55,7 @@ export default function SearchPage() {
       {!query && (
         <div className="space-y-8">
           <div>
-            <h2 className="text-sm font-semibold flex items-center gap-1.5 mb-3"><TrendingUp size={16} className="text-accent" /> Trending topics</h2>
+            <h2 className="text-sm font-semibold flex items-center gap-1.5 mb-3"><TrendingUp size={16} className="text-accent" /> Sujets tendances</h2>
             <div className="flex flex-wrap gap-2">
               {trendingTopics.map((t) => (
                 <button key={t} onClick={() => setQuery(t)} className="rounded-full bg-secondary px-4 py-2 text-sm hover:bg-primary/10 hover:text-primary transition-colors">
@@ -65,9 +65,9 @@ export default function SearchPage() {
             </div>
           </div>
           <div>
-            <h2 className="text-sm font-semibold mb-3">Suggested searches</h2>
+            <h2 className="text-sm font-semibold mb-3">Recherches suggérées</h2>
             <div className="grid sm:grid-cols-2 gap-3">
-              {['How to calibrate a chlorophyll meter', 'Greenhouse cooling without electricity', 'Drip irrigation for vegetables', 'No-till soybean results'].map((s) => (
+              {['Calibrer un mètre de chlorophylle', 'Refroidir une serre sans électricité', 'Irrigation goutte-à-goutte pour légumes', 'Résultats de soja sans labour'].map((s) => (
                 <button key={s} onClick={() => setQuery(s.split(' ')[1])} className="flex items-center gap-2 rounded-lg border border-border p-3 text-sm text-left hover:border-primary/30 hover:bg-primary/5 transition-colors">
                   <Search size={15} className="text-muted-foreground" /> {s}
                 </button>
@@ -81,7 +81,7 @@ export default function SearchPage() {
         <>
           <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
             <p className="text-sm text-muted-foreground">
-              {total} result{total !== 1 ? 's' : ''} for <span className="font-medium text-foreground">&quot;{query}&quot;</span>
+              {total} résultat{total !== 1 ? 's' : ''} pour <span className="font-medium text-foreground">&quot;{query}&quot;</span>
             </p>
             <div className="flex gap-1.5">
               {types.map((t) => (
@@ -101,39 +101,39 @@ export default function SearchPage() {
 
           {total === 0 ? (
             <div className="text-center py-20">
-              <p className="text-muted-foreground">No results found. Try a different term or browse trending topics above.</p>
+              <p className="text-muted-foreground">Aucun résultat trouvé. Essayez un autre terme ou consultez les sujets tendances ci-dessus.</p>
             </div>
           ) : (
             <div className="space-y-8">
-              {(type === 'All' || type === 'Videos') && results!.videos.length > 0 && (
-                <Section title="Videos" count={results!.videos.length}>
+              {(type === 'Tout' || type === 'Vidéos') && results!.videos.length > 0 && (
+                <Section title="Vidéos" count={results!.videos.length}>
                   <div className="space-y-4">
                     {results!.videos.slice(0, 5).map((v) => <VideoCardCompact key={v.id} video={v} />)}
                   </div>
                 </Section>
               )}
-              {(type === 'All' || type === 'Articles') && results!.articles.length > 0 && (
+              {(type === 'Tout' || type === 'Articles') && results!.articles.length > 0 && (
                 <Section title="Articles" count={results!.articles.length}>
                   <Card className="px-5 divide-y divide-border/60">
                     {results!.articles.map((a) => <ArticleListItem key={a.id} article={a} />)}
                   </Card>
                 </Section>
               )}
-              {(type === 'All' || type === 'Members') && results!.members.length > 0 && (
-                <Section title="Members" count={results!.members.length}>
+              {(type === 'Tout' || type === 'Membres') && results!.members.length > 0 && (
+                <Section title="Membres" count={results!.members.length}>
                   <div className="grid sm:grid-cols-2 gap-3">
                     {results!.members.map((m) => <Card key={m.id} className="p-4"><MemberAvatarRow member={m} size={44} /></Card>)}
                   </div>
                 </Section>
               )}
-              {(type === 'All' || type === 'Questions') && results!.questions.length > 0 && (
+              {(type === 'Tout' || type === 'Questions') && results!.questions.length > 0 && (
                 <Section title="Questions" count={results!.questions.length}>
                   <div className="space-y-3">
                     {results!.questions.map((qu) => (
                       <Card key={qu.id} className="p-4">
                         <p className="font-medium leading-snug">{qu.title}</p>
                         <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{qu.body}</p>
-                        <p className="text-xs text-muted-foreground mt-2 tabular-nums">{qu.answers} answers · {formatCount(qu.views)} views</p>
+                        <p className="text-xs text-muted-foreground mt-2 tabular-nums">{qu.answers} réponses · {formatCount(qu.views)} vues</p>
                       </Card>
                     ))}
                   </div>

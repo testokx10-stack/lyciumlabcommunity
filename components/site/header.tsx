@@ -10,10 +10,10 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const nav = [
-  { label: 'Home', href: '/' },
-  { label: 'Videos', href: '/videos' },
-  { label: 'Community', href: '/community' },
-  { label: 'Knowledge Hub', href: '/learn' },
+  { label: 'Accueil', href: '/' },
+  { label: 'Vidéos', href: '/videos' },
+  { label: 'Communauté', href: '/community' },
+  { label: 'Hub de connaissances', href: '/learn' },
 ];
 
 export function SiteHeader() {
@@ -80,13 +80,13 @@ export function SiteHeader() {
             </Button>
             <Button asChild size="sm" className="hidden sm:inline-flex gap-1.5">
               <Link href="/upload">
-                <Plus size={16} /> Upload
+                <Plus size={16} /> Téléverser
               </Link>
             </Button>
             <div className="hidden sm:block">
               <Link href="/profile/u3" className="flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-full hover:bg-secondary transition-colors">
                 <Avatar className="h-8 w-8 border border-border">
-                  <AvatarImage src="https://images.pexels.com/photos/30907804/pexels-photo-30907804.jpeg?auto=compress&cs=tinysrgb&h=80&w=80" alt="Profile" />
+                  <AvatarImage src="https://images.pexels.com/photos/30909798/pexels-photo-30909798.jpeg?auto=compress&cs=tinysrgb&h=80&w=80" alt="Profil" />
                   <AvatarFallback>YT</AvatarFallback>
                 </Avatar>
                 <ChevronDown size={14} className="text-muted-foreground" />
@@ -130,10 +130,10 @@ export function SiteHeader() {
           })}
           <div className="flex gap-2 mt-2 pt-3 border-t border-border/60">
             <Button asChild variant="outline" size="sm" className="flex-1 gap-1.5">
-              <Link href="/search"><Search size={16} /> Search</Link>
+              <Link href="/search"><Search size={16} /> Recherche</Link>
             </Button>
             <Button asChild size="sm" className="flex-1 gap-1.5">
-              <Link href="/upload"><Plus size={16} /> Upload</Link>
+              <Link href="/upload"><Plus size={16} /> Téléverser</Link>
             </Button>
           </div>
         </nav>

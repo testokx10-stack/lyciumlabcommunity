@@ -11,23 +11,23 @@ export default function LoginPage() {
     <div className="container-px mx-auto max-w-md py-14">
       <div className="flex flex-col items-center mb-8">
         <Logo size="lg" />
-        <h1 className="font-display text-3xl font-semibold tracking-tight mt-6">Welcome back</h1>
-        <p className="text-muted-foreground mt-2 text-center">Sign in to continue learning and sharing with the community.</p>
+        <h1 className="font-display text-3xl font-semibold tracking-tight mt-6">Bon retour</h1>
+        <p className="text-muted-foreground mt-2 text-center">Connectez-vous pour continuer à apprendre et à partager avec la communauté.</p>
       </div>
 
       <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
         <form className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">E-mail</Label>
             <div className="relative">
               <Mail size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input id="email" type="email" placeholder="you@farm.com" className="pl-10 h-11" required />
+              <Input id="email" type="email" placeholder="vous@ferme.com" className="pl-10 h-11" required />
             </div>
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <Link href="#" className="text-xs text-primary hover:underline">Forgot password?</Link>
+              <Label htmlFor="password">Mot de passe</Label>
+              <Link href="#" className="text-xs text-primary hover:underline">Mot de passe oublié ?</Link>
             </div>
             <div className="relative">
               <Lock size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -36,14 +36,14 @@ export default function LoginPage() {
           </div>
           <div className="flex items-center gap-2">
             <Checkbox id="remember" />
-            <Label htmlFor="remember" className="text-sm text-muted-foreground font-normal cursor-pointer">Remember me for 30 days</Label>
+            <Label htmlFor="remember" className="text-sm text-muted-foreground font-normal cursor-pointer">Se souvenir de moi pour 30 jours</Label>
           </div>
-          <Button type="submit" size="lg" className="w-full gap-1.5 mt-2">Sign in <ArrowRight size={17} /></Button>
+          <Button type="submit" size="lg" className="w-full gap-1.5 mt-2">Connexion <ArrowRight size={17} /></Button>
         </form>
 
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/60" /></div>
-          <div className="relative flex justify-center"><span className="bg-card px-3 text-xs text-muted-foreground">or continue with</span></div>
+          <div className="relative flex justify-center"><span className="bg-card px-3 text-xs text-muted-foreground">ou continuer avec</span></div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -53,7 +53,7 @@ export default function LoginPage() {
       </div>
 
       <p className="text-center text-sm text-muted-foreground mt-6">
-        New to Lycium Lab? <Link href="/register" className="text-primary font-medium hover:underline">Create an account</Link>
+        Nouveau sur Lycium Lab ? <Link href="/register" className="text-primary font-medium hover:underline">Créer un compte</Link>
       </p>
     </div>
   );

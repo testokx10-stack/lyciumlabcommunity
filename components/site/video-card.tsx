@@ -71,7 +71,7 @@ export function VideoCardCompact({ video }: { video: Video }) {
       <div className="min-w-0 flex-1">
         <h4 className="text-sm font-medium leading-snug line-clamp-2 group-hover:text-primary transition-colors">{video.title}</h4>
         <p className="text-xs text-muted-foreground mt-1">{author?.name}</p>
-        <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">{formatCount(video.views)} views · {timeAgo(video.publishedAt)}</p>
+        <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">{formatCount(video.views)} vues · {timeAgo(video.publishedAt)}</p>
       </div>
     </Link>
   );
@@ -87,10 +87,10 @@ export function VideoActions({ video }: { video: Video }) {
         <MessageCircle size={15} /> {video.comments}
       </button>
       <button className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3.5 py-1.5 text-sm font-medium hover:bg-primary/10 hover:text-primary transition-colors">
-        <Share2 size={15} /> Share
+        <Share2 size={15} /> Partager
       </button>
       <button className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3.5 py-1.5 text-sm font-medium hover:bg-primary/10 hover:text-primary transition-colors">
-        <Bookmark size={15} /> Save
+        <Bookmark size={15} /> Enregistrer
       </button>
     </div>
   );

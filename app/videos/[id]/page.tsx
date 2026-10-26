@@ -27,16 +27,16 @@ export default function VideoDetailPage({ params }: { params: { id: string } }) 
   const continueWatching = videos.filter((v) => v.id !== video.id).slice(0, 4);
 
   const sampleComments = [
-    { id: 'c1', authorId: 'u4', body: 'The section on cover cropping for microbiome recovery was exactly what I needed. Going to trial rye + vetch this winter.', postedAt: '3 days ago', likes: 24 },
-    { id: 'c2', authorId: 'u5', body: 'Have you seen differences in fungal vs bacterial dominance depending on tillage depth? Would love a follow-up.', postedAt: '2 days ago', likes: 12, replies: 1 },
-    { id: 'c3', authorId: 'u6', body: 'Solid evidence summary. The mycorrhizal reference list is gold for anyone starting out.', postedAt: '1 day ago', likes: 31 },
+    { id: 'c1', authorId: 'u4', body: 'La section sur les cultures couvrantes pour la récupération du microbiome du sol était exactement ce dont j\'avais besoin. Je vais tester la trèfle+violette cette hiver.', postedAt: 'il y a 3 jours', likes: 24 },
+    { id: 'c2', authorId: 'u5', body: 'Avez-vous constaté des différences entre la domination fongique et bactérienne selon la profondeur de travail du sol ? Un complément serait bienvenu.', postedAt: 'il y a 2 jours', likes: 12, replies: 1 },
+    { id: 'c3', authorId: 'u6', body: 'Un résumé de preuves solide. La liste de références mycorhiziens est un trésor pour qui commence.', postedAt: 'hier', likes: 31 },
   ];
 
   return (
     <div className="container-px mx-auto max-w-7xl py-6 lg:py-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-sm text-muted-foreground mb-5">
-        <Link href="/videos" className="hover:text-primary transition-colors">Videos</Link>
+        <Link href="/videos" className="hover:text-primary transition-colors">Vidéos</Link>
         <ChevronRight size={14} />
         <Link href={`/videos?cat=${category?.slug}`} className="hover:text-primary transition-colors">{category?.name}</Link>
         <ChevronRight size={14} />
@@ -61,7 +61,7 @@ export default function VideoDetailPage({ params }: { params: { id: string } }) 
             {video.title}
           </h1>
           <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground tabular-nums">
-            <span className="flex items-center gap-1.5"><Eye size={15} /> {formatCount(video.views)} views</span>
+            <span className="flex items-center gap-1.5"><Eye size={15} /> {formatCount(video.views)} vues</span>
             <span>·</span>
             <span>{formatDate(video.publishedAt)}</span>
             {category && (
@@ -85,8 +85,8 @@ export default function VideoDetailPage({ params }: { params: { id: string } }) 
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <MemberAvatarRow member={author!} size={48} />
             <div className="flex gap-2">
-              <Button size="sm" className="gap-1.5"><Bell size={15} /> Subscribe</Button>
-              <Button size="sm" variant="outline">Follow</Button>
+              <Button size="sm" className="gap-1.5"><Bell size={15} /> S&apos;abonner</Button>
+              <Button size="sm" variant="outline">Suivre</Button>
             </div>
           </div>
 
@@ -103,18 +103,18 @@ export default function VideoDetailPage({ params }: { params: { id: string } }) 
           {/* Comments */}
           <section className="mt-8">
             <h2 className="font-display text-xl font-semibold mb-4">
-              {video.comments} Comments
+              {video.comments} commentaires
             </h2>
             <div className="flex gap-3 mb-6">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={members[2].avatar} alt="You" />
+                <AvatarImage src={members[2].avatar} alt="Vous" />
                 <AvatarFallback>YT</AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <Textarea placeholder="Add a comment..." className="resize-none bg-background" rows={2} />
+                <Textarea placeholder="Ajouter un commentaire..." className="resize-none bg-background" rows={2} />
                 <div className="flex justify-end gap-2 mt-2">
-                  <Button size="sm" variant="ghost">Cancel</Button>
-                  <Button size="sm">Comment</Button>
+                  <Button size="sm" variant="ghost">Annuler</Button>
+                  <Button size="sm">Commenter</Button>
                 </div>
               </div>
             </div>
@@ -135,7 +135,7 @@ export default function VideoDetailPage({ params }: { params: { id: string } }) 
                       <p className="text-sm mt-1 leading-relaxed">{c.body}</p>
                       <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                         <button className="flex items-center gap-1 hover:text-primary transition-colors"><ThumbsUp size={13} /> {c.likes}</button>
-                        <button className="hover:text-primary transition-colors">Reply</button>
+                        <button className="hover:text-primary transition-colors">Répondre</button>
                       </div>
                     </div>
                   </div>
@@ -148,7 +148,7 @@ export default function VideoDetailPage({ params }: { params: { id: string } }) 
         {/* Sidebar */}
         <aside className="space-y-6">
           <div>
-            <h3 className="text-sm font-semibold mb-3 flex items-center gap-1.5"><ListChecks size={15} /> Continue learning</h3>
+            <h3 className="text-sm font-semibold mb-3 flex items-center gap-1.5"><ListChecks size={15} /> Continuer l&apos;apprentissage</h3>
             <div className="space-y-4">
               {continueWatching.map((v) => (
                 <VideoCardCompact key={v.id} video={v} />
@@ -158,7 +158,7 @@ export default function VideoDetailPage({ params }: { params: { id: string } }) 
           <Separator />
           {related.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold mb-3">Related videos</h3>
+              <h3 className="text-sm font-semibold mb-3">Vidéos connexes</h3>
               <div className="space-y-4">
                 {related.map((v) => (
                   <VideoCardCompact key={v.id} video={v} />
@@ -170,7 +170,7 @@ export default function VideoDetailPage({ params }: { params: { id: string } }) 
             <>
               <Separator />
               <div>
-                <h3 className="text-sm font-semibold mb-3">More from {author?.name}</h3>
+                <h3 className="text-sm font-semibold mb-3">Plus de {author?.name}</h3>
                 <div className="space-y-4">
                   {moreFromAuthor.map((v) => (
                     <VideoCardCompact key={v.id} video={v} />

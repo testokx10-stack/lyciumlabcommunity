@@ -14,33 +14,33 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   metadataBase: new URL('https://lyciumlab.org'),
   title: {
-    default: 'Lycium Lab — Growing Knowledge. Cultivating Innovation.',
+    default: 'Lycium Lab — Cultiver les connaissances. Privilégier l\'innovation.',
     template: '%s · Lycium Lab',
   },
   description:
-    'Lycium Lab is an agricultural science and education platform where farmers, engineers, researchers, and enthusiasts learn, share videos, and build a community around sustainable farming.',
+    'Lycium Lab est une plateforme de sciences agricoles et d\'éducation où agriculteurs, ingénieurs, chercheurs et passionnés apprennent, partagent des vidéos et construisent une communauté autour de l\'agriculture durable.',
   keywords: [
-    'agricultural science',
-    'sustainable farming',
-    'agronomy',
-    'crop science',
-    'soil fertility',
+    'sciences agricoles',
+    'agriculture durable',
+    'agronomie',
+    'science des cultures',
+    'fertilité du sol',
     'irrigation',
-    'greenhouse',
+    'serre',
     'agtech',
-    'plant science',
+    'sciences végétales',
   ],
   openGraph: {
-    title: 'Lycium Lab — Growing Knowledge. Cultivating Innovation.',
+    title: 'Lycium Lab — Cultiver les connaissances. Privilégier l\'innovation.',
     description:
-      'Discover agricultural science, share your expertise, and grow together with the Lycium Lab community.',
+      'Découvrez les sciences agricoles, partagez votre expertise et cultivons ensemble la communauté de Lycium Lab.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Lycium Lab — Growing Knowledge. Cultivating Innovation.',
+    title: 'Lycium Lab — Cultiver les connaissances. Privilégier l\'innovation.',
     description:
-      'Discover agricultural science, share your expertise, and grow together with the Lycium Lab community.',
+      'Découvrez les sciences agricoles, partagez votre expertise et cultivons ensemble la communauté de Lycium Lab.',
   },
 };
 
@@ -50,7 +50,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
+    <html lang="fr" className={`${inter.variable} ${fraunces.variable}`}>
       <body className="font-sans antialiased min-h-screen flex flex-col">
         <SiteHeader />
         <main className="flex-1">{children}</main>

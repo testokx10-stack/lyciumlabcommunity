@@ -4,39 +4,39 @@ import { Youtube, Twitter, Linkedin, Instagram, Mail, MapPin, ArrowRight } from 
 
 const footerNav = [
   {
-    title: 'Platform',
+    title: 'Plateforme',
     links: [
-      { label: 'Video Library', href: '/videos' },
-      { label: 'Knowledge Hub', href: '/learn' },
-      { label: 'Community', href: '/community' },
-      { label: 'Search', href: '/search' },
+      { label: 'Bibliothèque vidéo', href: '/videos' },
+      { label: 'Hub de connaissances', href: '/learn' },
+      { label: 'Communauté', href: '/community' },
+      { label: 'Recherche', href: '/search' },
     ],
   },
   {
-    title: 'Account',
+    title: 'Compte',
     links: [
-      { label: 'Sign In', href: '/login' },
-      { label: 'Create Account', href: '/register' },
-      { label: 'Upload a Video', href: '/upload' },
-      { label: 'Your Profile', href: '/profile/u3' },
+      { label: 'Connexion', href: '/login' },
+      { label: 'Créer un compte', href: '/register' },
+      { label: 'Téléverser une vidéo', href: '/upload' },
+      { label: 'Votre profil', href: '/profile/u3' },
     ],
   },
   {
-    title: 'Categories',
+    title: 'Catégories',
     links: [
-      { label: 'Plant Science', href: '/videos?cat=plant-science' },
-      { label: 'Soil & Fertility', href: '/videos?cat=soil-science' },
-      { label: 'Greenhouse', href: '/videos?cat=greenhouse' },
-      { label: 'AgTech & AI', href: '/videos?cat=agtech' },
+      { label: 'Sciences végétales', href: '/videos?cat=plant-science' },
+      { label: 'Sol et fertilité', href: '/videos?cat=soil-science' },
+      { label: 'Serre', href: '/videos?cat=greenhouse' },
+      { label: 'AgTech & IA', href: '/videos?cat=agtech' },
     ],
   },
   {
-    title: 'Organization',
+    title: 'Organisation',
     links: [
-      { label: 'Admin Dashboard', href: '/admin' },
-      { label: 'Our Mission', href: '/#mission' },
+      { label: 'Tableau de bord admin', href: '/admin' },
+      { label: 'Notre mission', href: '/#mission' },
       { label: 'Contact', href: '/#contact' },
-      { label: 'Guidelines', href: '/community' },
+      { label: 'Directives', href: '/community' },
     ],
   },
 ];
@@ -56,11 +56,11 @@ export function SiteFooter() {
           <div className="space-y-4">
             <Logo />
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
-              An agricultural science and education platform where farmers, researchers, and enthusiasts learn, share, and grow together.
+              Une plateforme de sciences agricoles et d&apos;éducation où agriculteurs, chercheurs et passionnés apprennent, partagent et cultivent ensemble.
             </p>
             <div className="space-y-1.5 text-sm text-muted-foreground">
               <p className="flex items-center gap-2"><Mail size={14} /> hello@lyciumlab.org</p>
-              <p className="flex items-center gap-2"><MapPin size={14} /> Global · Remote-first</p>
+              <p className="flex items-center gap-2"><MapPin size={14} /> Mondial · À distance</p>
             </div>
             <div className="flex gap-2 pt-1">
               {socials.map((s) => (
@@ -98,12 +98,12 @@ export function SiteFooter() {
 
         <div className="mt-12 pt-6 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Lycium Lab. Cultivating knowledge for a sustainable future.
+            © {new Date().getFullYear()} Lycium Lab. Cultivons des connaissances pour un avenir durable.
           </p>
           <div className="flex gap-5 text-xs text-muted-foreground">
-            <Link href="#" className="hover:text-primary transition-colors">Privacy</Link>
-            <Link href="#" className="hover:text-primary transition-colors">Terms</Link>
-            <Link href="#" className="hover:text-primary transition-colors">Code of Conduct</Link>
+            <Link href="#" className="hover:text-primary transition-colors">Confidentialité</Link>
+            <Link href="#" className="hover:text-primary transition-colors">Conditions</Link>
+            <Link href="#" className="hover:text-primary transition-colors">Code de conduite</Link>
           </div>
         </div>
       </div>

@@ -11,10 +11,10 @@ import { categories, videos, getCategory } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
 const filters = [
-  { key: 'latest', label: 'Latest', icon: Clock },
-  { key: 'trending', label: 'Trending', icon: TrendingUp },
-  { key: 'most-viewed', label: 'Most Viewed', icon: Eye },
-  { key: 'most-discussed', label: 'Most Discussed', icon: MessageCircle },
+  { key: 'latest', label: 'Récents', icon: Clock },
+  { key: 'trending', label: 'Tendances', icon: TrendingUp },
+  { key: 'most-viewed', label: 'Plus vues', icon: Eye },
+  { key: 'most-discussed', label: 'Plus commentés', icon: MessageCircle },
 ];
 
 function VideosContent() {
@@ -53,16 +53,16 @@ function VideosContent() {
   return (
     <div className="container-px mx-auto max-w-7xl py-10">
       <div className="flex flex-col gap-2 mb-6">
-        <h1 className="font-display text-3xl lg:text-4xl font-semibold tracking-tight">Video Library</h1>
+        <h1 className="font-display text-3xl lg:text-4xl font-semibold tracking-tight">Bibliothèque vidéo</h1>
         <p className="text-muted-foreground">
-          {filtered.length} videos across {categories.length} categories of agricultural science.
+          {filtered.length} vidéos couvrant {categories.length} catégories de sciences agricoles.
         </p>
       </div>
 
       <div className="relative mb-6 max-w-xl">
         <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search videos, tags, topics..."
+          placeholder="Rechercher des vidéos, mots-clés, sujets..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-11 h-12"
@@ -77,7 +77,7 @@ function VideosContent() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2 mb-5">
         <span className="flex items-center gap-1.5 text-sm text-muted-foreground mr-1">
-          <SlidersHorizontal size={15} /> Sort:
+          <SlidersHorizontal size={15} /> Trier :
         </span>
         {filters.map((f) => (
           <Button
@@ -101,7 +101,7 @@ function VideosContent() {
             cat === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-secondary/70',
           )}
         >
-          All categories
+          Toutes les catégories
         </button>
         {categories.map((c) => (
           <button
@@ -125,7 +125,7 @@ function VideosContent() {
         </div>
       ) : (
         <div className="text-center py-20">
-          <p className="text-muted-foreground">No videos match your search. Try a different term or category.</p>
+          <p className="text-muted-foreground">Aucune vidéo ne correspond à votre recherche. Essayez un autre terme ou une autre catégorie.</p>
         </div>
       )}
     </div>

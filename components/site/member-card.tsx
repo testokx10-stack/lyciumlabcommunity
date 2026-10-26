@@ -7,10 +7,10 @@ import { Member, formatCount } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
 const roleLabel: Record<Member['role'], string> = {
-  member: 'Member',
-  expert: 'Verified Expert',
-  moderator: 'Moderator',
-  admin: 'Administrator',
+  member: 'Membre',
+  expert: 'Expert vérifié',
+  moderator: 'Modérateur',
+  admin: 'Administrateur',
 };
 
 export function MemberCard({ member, className }: { member: Member; className?: string }) {
@@ -36,11 +36,11 @@ export function MemberCard({ member, className }: { member: Member; className?: 
         <MapPin size={12} /> {member.location}
       </p>
       <div className="flex gap-4 mt-3 text-xs text-muted-foreground tabular-nums">
-        <span><b className="text-foreground">{formatCount(member.followers)}</b> followers</span>
-        <span><b className="text-foreground">{member.contributions}</b> posts</span>
+        <span><b className="text-foreground">{formatCount(member.followers)}</b> abonnés</span>
+        <span><b className="text-foreground">{member.contributions}</b> publications</span>
       </div>
       <Button size="sm" variant="outline" className="mt-4 w-full">
-        <Users size={14} className="mr-1.5" /> Follow
+        <Users size={14} className="mr-1.5" /> Suivre
       </Button>
     </Card>
   );

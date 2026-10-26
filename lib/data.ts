@@ -212,7 +212,7 @@ export const videos: Video[] = [
     category: 'greenhouse',
     tags: ['serre', 'milieu contrôlé', 'DIY'],
     trending: true,
-    embed: 'https://www.youtube.com/embed/ESdNsXt48mE',
+    embed: 'https://www.youtube.com/embed/ISi2VrIm0-s',
   },
   {
     id: 'v3',
@@ -231,7 +231,7 @@ export const videos: Video[] = [
     tags: ['drones', 'NDVI', 'agriculture de précision', 'IA'],
     featured: true,
     trending: true,
-    embed: 'https://www.youtube.com/embed/bCb1gw_jWbc',
+    embed: 'https://www.youtube.com/embed/TYGXStbVsXM',
   },
   {
     id: 'v4',
@@ -249,7 +249,7 @@ export const videos: Video[] = [
     category: 'irrigation',
     tags: ['irrigation goutte-à-goutte', 'économie d\'eau', 'installation'],
     trending: false,
-    embed: 'https://www.youtube.com/embed/xmXcYSzk7wY',
+    embed: 'https://www.youtube.com/embed/BsgtnkXc-LE',
   },
   {
     id: 'v5',
@@ -267,7 +267,7 @@ export const videos: Video[] = [
     category: 'pest-management',
     tags: ['maladie des plantes', 'tavelure', 'diagnostic', 'IPM'],
     trending: true,
-    embed: 'https://www.youtube.com/embed/c96YxmuELy8',
+    embed: 'https://www.youtube.com/embed/kpLbSwvHxl8',
   },
   {
     id: 'v6',
@@ -285,7 +285,7 @@ export const videos: Video[] = [
     category: 'sustainable',
     tags: ['compostage', 'biologique', 'déchets', 'amendement du sol'],
     trending: false,
-    embed: 'https://www.youtube.com/embed/Bg0CXHT6kQk',
+    embed: 'https://www.youtube.com/embed/b59JBgRv2Xo',
   },
   {
     id: 'v7',
@@ -303,7 +303,7 @@ export const videos: Video[] = [
     category: 'plant-science',
     tags: ['chlorophylle', 'azote', 'santé des plantes', 'capteurs'],
     trending: false,
-    embed: 'https://www.youtube.com/embed/oPOnNA41Vi0',
+    embed: 'https://www.youtube.com/embed/c_K40RAMJa4',
   },
   {
     id: 'v8',
@@ -321,7 +321,7 @@ export const videos: Video[] = [
     category: 'fertilizers',
     tags: ['CRF', 'gestion des nutriments', 'efficacité'],
     trending: false,
-    embed: 'https://www.youtube.com/embed/dcU5J9pgvEc',
+    embed: 'https://www.youtube.com/embed/cAdUEGuxjfU',
   },
   {
     id: 'v9',
@@ -340,7 +340,7 @@ export const videos: Video[] = [
     tags: ['essai sur le terrain', 'culture couvrante', 'régénérative', 'données'],
     featured: true,
     trending: false,
-    embed: 'https://www.youtube.com/embed/mngPNBhYgUI',
+    embed: 'https://www.youtube.com/embed/nryU4l9xjWY',
   },
   {
     id: 'v10',
@@ -357,11 +357,11 @@ export const videos: Video[] = [
     authorId: 'u3',
     category: 'plant-science',
     tags: ['culture de tissu', 'micropropagation', 'biotechnologie'],
-    trending: false,
-    embed: 'https://www.youtube.com/embed/uSY6m1gqtYc',
+trending: false,
+    embed: 'https://www.youtube.com/embed/nr5pc5hYW4E',
   },
   {
-    id: 'v11',
+    id: 'v12',
     title: 'Irrigation pivot centre : planifier pour une efficacité maximale',
     description:
       'Exploiter les données d\'évapotranspiration et les capteurs d\'humidité du sol pour chronoréguler les passages du pivot sans lessivage des éléments nutritifs.',

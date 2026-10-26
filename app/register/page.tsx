@@ -43,7 +43,7 @@ export default function RegisterPage() {
           <div className="lg:hidden mb-6"><Logo size="md" /></div>
           <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
             <h2 className="font-display text-2xl font-semibold tracking-tight">Créer votre compte</h2>
-            <p className="text-sm text-muted-foreground mt-1.5">Cela prend moins d'une minute.</p>
+            <p className="text-sm text-muted-foreground mt-1.5">Cela prend moins d&apos;une minute.</p>
 
             <form className="space-y-4 mt-6">
               <div className="grid sm:grid-cols-2 gap-4">
@@ -80,7 +80,7 @@ export default function RegisterPage() {
               <div className="flex items-start gap-2">
                 <Checkbox id="terms" className="mt-0.5" />
                 <Label htmlFor="terms" className="text-sm text-muted-foreground font-normal cursor-pointer leading-relaxed">
-                  J'accepte les <Link href="#" className="text-primary hover:underline">Conditions d'utilisation</Link> et le <Link href="#" className="text-primary hover:underline">Code de conduite</Link>.
+                  J&apos;accepte les <Link href="#" className="text-primary hover:underline">Conditions d'utilisation</Link> et le <Link href="#" className="text-primary hover:underline">Code de conduite</Link>.
                 </Label>
               </div>
               <Button type="submit" size="lg" className="w-full gap-1.5">Créer le compte <ArrowRight size={17} /></Button>

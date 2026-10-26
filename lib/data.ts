@@ -21,6 +21,7 @@ export type Video = {
   tags: string[];
   featured?: boolean;
   trending?: boolean;
+  embed?: string;
 };
 
 export type Article = {
@@ -193,6 +194,7 @@ export const videos: Video[] = [
     tags: ['santé du sol', 'microbiome', 'cultures couvrantes', 'fertilité'],
     featured: true,
     trending: true,
+    embed: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   {
     id: 'v2',
@@ -210,6 +212,7 @@ export const videos: Video[] = [
     category: 'greenhouse',
     tags: ['serre', 'milieu contrôlé', 'DIY'],
     trending: true,
+    embed: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   {
     id: 'v3',
@@ -228,6 +231,7 @@ export const videos: Video[] = [
     tags: ['drones', 'NDVI', 'agriculture de précision', 'IA'],
     featured: true,
     trending: true,
+    embed: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   {
     id: 'v4',
@@ -262,6 +266,7 @@ export const videos: Video[] = [
     category: 'pest-management',
     tags: ['maladie des plantes', 'tavelure', 'diagnostic', 'IPM'],
     trending: true,
+    embed: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   {
     id: 'v6',
@@ -279,6 +284,7 @@ export const videos: Video[] = [
     category: 'sustainable',
     tags: ['compostage', 'biologique', 'déchets', 'amendement du sol'],
     trending: false,
+    embed: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   {
     id: 'v7',
@@ -296,6 +302,7 @@ export const videos: Video[] = [
     category: 'plant-science',
     tags: ['chlorophylle', 'azote', 'santé des plantes', 'capteurs'],
     trending: false,
+    embed: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   {
     id: 'v8',
@@ -331,6 +338,7 @@ export const videos: Video[] = [
     tags: ['essai sur le terrain', 'culture couvrante', 'régénérative', 'données'],
     featured: true,
     trending: false,
+    embed: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   {
     id: 'v10',
@@ -348,6 +356,7 @@ export const videos: Video[] = [
     category: 'plant-science',
     tags: ['culture de tissu', 'micropropagation', 'biotechnologie'],
     trending: false,
+    embed: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   {
     id: 'v11',
@@ -365,6 +374,7 @@ export const videos: Video[] = [
     category: 'irrigation',
     tags: ['pivot centre', 'ET', 'planification', 'capteurs'],
     trending: false,
+    embed: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   {
     id: 'v12',
@@ -382,6 +392,7 @@ export const videos: Video[] = [
     category: 'sustainable',
     tags: ['sylvopâturage', 'régénérative', 'carbone du sol', 'élevage'],
     trending: false,
+    embed: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
 ];
 

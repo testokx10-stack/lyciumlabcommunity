@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Play, Eye, ThumbsUp, MessageCircle, Share2, Bookmark, Bell, ListChecks, ChevronRight } from 'lucide-react';
+import { Eye, ThumbsUp, MessageCircle, Share2, Bookmark, Bell, ListChecks, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -47,13 +47,15 @@ export default function VideoDetailPage({ params }: { params: { id: string } }) 
         <div className="min-w-0">
           {/* Player */}
           <div className="relative aspect-video rounded-2xl overflow-hidden bg-black shadow-2xl shadow-primary/10">
-            <img src={video.thumbnail} alt={video.title} className="h-full w-full object-cover opacity-90" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            <button className="absolute inset-0 grid place-items-center group">
-              <span className="grid h-20 w-20 place-items-center rounded-full bg-white/15 backdrop-blur-md text-white ring-1 ring-white/30 group-hover:scale-110 group-hover:bg-accent transition-all duration-300">
-                <Play size={34} className="ml-1" fill="currentColor" />
-              </span>
-            </button>
+            <iframe
+              src={video.embed}
+              title={video.title}
+              className="h-full w-full"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
           </div>
 
           {/* Title + meta */}

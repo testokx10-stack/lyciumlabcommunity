@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Search, Menu, X } from 'lucide-react';
+import { LogOut, Search, Settings, Menu, UserRound, X } from 'lucide-react';
 import { Logo } from './logo';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/components/auth/AuthProvider';
 import { cn } from '@/lib/utils';
 
 const nav = [
@@ -17,8 +19,11 @@ const nav = [
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading: authLoading, signOut } = useAuth();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [signOutError, setSignOutError] = useState('');
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -29,7 +34,40 @@ export function SiteHeader() {
 
   useEffect(() => {
     setOpen(false);
+    setSignOutError('');
   }, [pathname]);
+
+  const handleSignOut = async () => {
+    setSignOutError('');
+    try {
+      const { error } = await signOut();
+      if (error) throw error;
+      setOpen(false);
+      router.push('/');
+    } catch (error) {
+      console.error('Failed to sign out:', error);
+      setSignOutError('La déconnexion a échoué. Veuillez réessayer.');
+    }
+  };
+
+  const accountLinks = user ? (
+    <>
+      <Button asChild variant="ghost" size="sm" className="gap-1.5">
+        <Link href={`/profile/${encodeURIComponent(user.id)}`}><UserRound size={16} /> Mon profil</Link>
+      </Button>
+      <Button asChild variant="ghost" size="sm" className="gap-1.5">
+        <Link href="/settings"><Settings size={16} /> Gérer mon profil</Link>
+      </Button>
+      <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={handleSignOut}>
+        <LogOut size={16} /> Déconnexion
+      </Button>
+    </>
+  ) : !authLoading ? (
+    <>
+      <Button asChild variant="ghost" size="sm"><Link href="/login">Connexion</Link></Button>
+      <Button asChild size="sm"><Link href="/register">Créer un compte</Link></Button>
+    </>
+  ) : null;
 
   return (
     <header
@@ -71,6 +109,9 @@ export function SiteHeader() {
                 <Search size={19} />
               </span>
             </Link>
+            <div className="hidden lg:flex items-center gap-1">
+              {accountLinks}
+            </div>
             <Button
               variant="ghost"
               size="icon"
@@ -87,8 +128,8 @@ export function SiteHeader() {
       {/* Mobile menu */}
       <div
         className={cn(
-          'lg:hidden overflow-hidden transition-all duration-300 glass',
-          open ? 'max-h-96 border-t border-border/60' : 'max-h-0',
+          'lg:hidden overflow-y-auto transition-all duration-300 glass',
+          open ? 'max-h-[80vh] border-t border-border/60' : 'max-h-0',
         )}
       >
         <nav className="container-px mx-auto max-w-7xl py-4 flex flex-col gap-1">
@@ -107,13 +148,19 @@ export function SiteHeader() {
               </Link>
             );
           })}
-          <div className="flex gap-2 mt-2 pt-3 border-t border-border/60">
-            <Button asChild variant="outline" size="sm" className="flex-1 gap-1.5">
+          <div className="flex flex-col gap-1 mt-2 pt-3 border-t border-border/60">
+            <Button asChild variant="outline" size="sm" className="justify-start gap-1.5">
               <Link href="/search"><Search size={16} /> Recherche</Link>
             </Button>
+            {accountLinks}
           </div>
         </nav>
       </div>
+      {signOutError && (
+        <p role="alert" className="container-px mx-auto max-w-7xl pb-2 text-right text-sm text-destructive">
+          {signOutError}
+        </p>
+      )}
     </header>
   );
 }

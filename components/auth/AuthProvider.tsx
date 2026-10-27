@@ -10,7 +10,7 @@ interface AuthContextType {
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null; needsEmailConfirmation: boolean }>
-  signOut: () => Promise<void>
+  signOut: () => Promise<{ error: Error | null }>
   refreshUser: () => Promise<void>
 }
 
@@ -78,10 +78,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signOut = async () => {
-    if (!hasSupabaseConfig) return
-    await supabase.auth.signOut()
+    if (!hasSupabaseConfig) return { error: new Error('Supabase is not configured') }
+    const { error } = await supabase.auth.signOut()
+    if (error) return { error }
     setUser(null)
     setSession(null)
+    return { error: null }
   }
 
   const refreshUser = async () => {

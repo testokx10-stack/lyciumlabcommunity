@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Youtube, Twitter, Linkedin, Instagram, Mail, MapPin, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 const footerNav = [
   {
@@ -16,36 +16,25 @@ const footerNav = [
     title: 'Compte',
     links: [
       { label: 'Connexion', href: '/login' },
-      { label: 'Créer un compte', href: '/register' },
-      { label: 'Téléverser une vidéo', href: '/upload' },
-      { label: 'Votre profil', href: '/profile/u3' },
+      { label: 'Inscription', href: '/register' },
     ],
   },
   {
     title: 'Catégories',
     links: [
-      { label: 'Sciences végétales', href: '/videos?cat=plant-science' },
-      { label: 'Sol et fertilité', href: '/videos?cat=soil-science' },
-      { label: 'Serre', href: '/videos?cat=greenhouse' },
-      { label: 'AgTech & IA', href: '/videos?cat=agtech' },
+      { label: 'Sciences végétales', href: '/learn?cat=plant-science#ressources' },
+      { label: 'Sol et fertilité', href: '/learn?cat=soil-science#ressources' },
+      { label: 'Serre', href: '/learn?cat=greenhouse#ressources' },
+      { label: 'AgTech & IA', href: '/learn?cat=agtech#ressources' },
     ],
   },
   {
     title: 'Organisation',
     links: [
-      { label: 'Tableau de bord admin', href: '/admin' },
       { label: 'Notre mission', href: '/#mission' },
-      { label: 'Contact', href: '/#contact' },
-      { label: 'Directives', href: '/community' },
+      { label: 'Rejoindre la communauté', href: '/register' },
     ],
   },
-];
-
-const socials = [
-  { icon: Youtube, href: '#', label: 'YouTube' },
-  { icon: Twitter, href: '#', label: 'Twitter' },
-  { icon: Linkedin, href: '#', label: 'LinkedIn' },
-  { icon: Instagram, href: '#', label: 'Instagram' },
 ];
 
 export function SiteFooter() {
@@ -62,24 +51,8 @@ export function SiteFooter() {
               className="h-36 w-36 rounded-xl object-contain"
             />
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
-              Une plateforme de sciences agricoles et d&apos;éducation où agriculteurs, chercheurs et passionnés apprennent, partagent et cultivent ensemble.
+              Un espace éducatif ouvert de partage des connaissances en sciences agricoles.
             </p>
-            <div className="space-y-1.5 text-sm text-muted-foreground">
-              <p className="flex items-center gap-2"><Mail size={14} /> hello@lyciumlab.org</p>
-              <p className="flex items-center gap-2"><MapPin size={14} /> Mondial · À distance</p>
-            </div>
-            <div className="flex gap-2 pt-1">
-              {socials.map((s) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  aria-label={s.label}
-                  className="grid h-9 w-9 place-items-center rounded-lg border border-border text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-colors"
-                >
-                  <s.icon size={17} />
-                </a>
-              ))}
-            </div>
           </div>
 
           {footerNav.map((col) => (
@@ -107,9 +80,10 @@ export function SiteFooter() {
             © {new Date().getFullYear()} Lycium Bio Lab. Cultivons des connaissances pour un avenir durable.
           </p>
           <div className="flex gap-5 text-xs text-muted-foreground">
-            <Link href="#" className="hover:text-primary transition-colors">Confidentialité</Link>
-            <Link href="#" className="hover:text-primary transition-colors">Conditions</Link>
-            <Link href="#" className="hover:text-primary transition-colors">Code de conduite</Link>
+            <Link href="/privacy" className="hover:text-primary transition-colors">Confidentialité</Link>
+            <Link href="/terms" className="hover:text-primary transition-colors">Conditions</Link>
+            <Link href="/legal-notice" className="hover:text-primary transition-colors">Mentions légales</Link>
+            <Link href="/conduct" className="hover:text-primary transition-colors">Code de conduite</Link>
           </div>
         </div>
       </div>

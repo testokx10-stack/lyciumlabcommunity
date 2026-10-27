@@ -1,12 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Heart, MessageCircle, Share2, ImagePlus, Send, TrendingUp, HelpCircle, Users, Flame, BadgeCheck, Bookmark, X } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Send, TrendingUp, HelpCircle, Users, Flame, BadgeCheck, Bookmark, Trash2 } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { FollowButton } from '@/components/site/follow-button';
-import { COMMUNITY_MEDIA_ACCEPT, getCommunityMediaType, MAX_COMMUNITY_MEDIA_SIZE } from '@/lib/community-media';
-import { removeCommunityMedia, uploadCommunityMedia } from '@/lib/community-media-client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -65,6 +63,10 @@ type CommunityQuestion = {
 };
 
 export default function CommunityPage() {
+  return <CommunityExperience />;
+}
+
+function CommunityExperience() {
   const { user, loading: authLoading } = useAuth();
   const [tab, setTab] = useState('feed');
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
@@ -74,15 +76,12 @@ export default function CommunityPage() {
   const [postsLoading, setPostsLoading] = useState(true);
   const [postsError, setPostsError] = useState('');
   const [postContent, setPostContent] = useState('');
-  const [selectedMedia, setSelectedMedia] = useState<File | null>(null);
   const [posting, setPosting] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [postError, setPostError] = useState('');
   const [communityQuestions, setCommunityQuestions] = useState<CommunityQuestion[]>([]);
   const [questionsLoading, setQuestionsLoading] = useState(false);
   const [questionError, setQuestionError] = useState('');
   const [questionPosting, setQuestionPosting] = useState(false);
-  const mediaInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     try {
@@ -187,45 +186,35 @@ export default function CommunityPage() {
     });
   };
 
-  const incrementPostCommentCount = (postId: string) => {
+  const changePostCommentCount = (postId: string, change: number) => {
     setFeedPosts((previous) => previous.map((post) => (
-      post.id === postId ? { ...post, comments_count: post.comments_count + 1 } : post
+      post.id === postId ? { ...post, comments_count: Math.max(0, post.comments_count + change) } : post
     )));
   };
 
-  const submitPost = async (content: string, media: File | null) => {
-    if ((!content.trim() && !media) || posting || !user) return false;
+  const submitPost = async (content: string) => {
+    if (!content.trim() || posting || !user) return false;
     setPostError('');
     setPosting(true);
-    let uploadedMediaPath: string | undefined;
     try {
-      const uploadedMedia = media ? await uploadCommunityMedia(media, user, setUploadProgress) : null;
-      uploadedMediaPath = uploadedMedia?.path;
       const response = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content,
-          media_path: uploadedMedia?.path,
-          media_type: uploadedMedia?.mediaType,
-        })
+        body: JSON.stringify({ content })
       });
       const result = await response.json();
       if (!response.ok) {
         throw new Error(result.error || 'Impossible de publier. Veuillez réessayer.');
       }
       setFeedPosts(prev => [result.post, ...prev]);
-      setSelectedMedia(null);
       setPostContent('');
       return true;
     } catch (e) {
       console.error('Failed to post:', e);
-      if (uploadedMediaPath) await removeCommunityMedia(uploadedMediaPath);
       setPostError(e instanceof Error ? e.message : 'Impossible de publier. Veuillez réessayer.');
       return false;
     } finally {
       setPosting(false);
-      setUploadProgress(null);
     }
   };
 
@@ -326,51 +315,18 @@ export default function CommunityPage() {
                       placeholder="Share a tip, discovery, or question with the community..."
                       className="w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground min-h-[48px]"
                     />
-                    {selectedMedia && (
-                      <SelectedMediaPreview file={selectedMedia} onRemove={() => setSelectedMedia(null)} />
-                    )}
                     {postError && <p role="alert" className="text-sm text-destructive mt-2">{postError}</p>}
                     <div className="flex items-center justify-between mt-2">
-                      <div className="flex gap-1">
-                        <input
-                          ref={mediaInputRef}
-                          type="file"
-                          accept={COMMUNITY_MEDIA_ACCEPT}
-                          className="hidden"
-                          onChange={(event) => {
-                            const file = event.target.files?.[0] || null;
-                            event.target.value = '';
-                            if (!file) return;
-                            if (!file.size) {
-                              setPostError('That file is empty. Choose another image or video.');
-                              return;
-                            }
-                            if (!getCommunityMediaType(file)) {
-                              setPostError('Choose a JPEG, PNG, GIF, or WebP image, or an MP4, WebM, or MOV video.');
-                              return;
-                            }
-                            if (file.size > MAX_COMMUNITY_MEDIA_SIZE) {
-                              setPostError('Files must be 50 MB or smaller.');
-                              return;
-                            }
-                            setPostError('');
-                            setSelectedMedia(file);
-                          }}
-                        />
-                        <Button type="button" variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" onClick={() => mediaInputRef.current?.click()}>
-                          <ImagePlus size={16} /> Photo or video
-                        </Button>
-                      </div>
                       <Button
                         type="button"
                         size="sm"
                         className="gap-1.5"
-                        disabled={(!postContent.trim() && !selectedMedia) || posting}
+                        disabled={!postContent.trim() || posting}
                         onClick={async () => {
-                          await submitPost(postContent, selectedMedia);
+                          await submitPost(postContent);
                         }}
                       >
-                        <Send size={15} /> {posting ? (uploadProgress !== null ? `Uploading ${uploadProgress}%` : 'Publishing...') : 'Post'}
+                        <Send size={15} /> {posting ? 'Publishing...' : 'Post'}
                       </Button>
                     </div>
                   </div>
@@ -389,7 +345,7 @@ export default function CommunityPage() {
             ) : postsError ? (
               <p role="alert" className="text-sm text-destructive">{postsError}</p>
             ) : (
-              <Feed posts={feedPosts} likedPosts={likedPosts} bookmarkedPosts={bookmarkedPosts} onToggleLike={toggleLike} onToggleBookmark={toggleBookmark} onCommentCreated={incrementPostCommentCount} />
+              <Feed currentUserId={user?.id} posts={feedPosts} likedPosts={likedPosts} bookmarkedPosts={bookmarkedPosts} onToggleLike={toggleLike} onToggleBookmark={toggleBookmark} onCommentCountChange={changePostCommentCount} onDeletePost={(id) => setFeedPosts((previous) => previous.filter((post) => post.id !== id))} />
             )
           )}
           {tab === 'qa' && (
@@ -417,7 +373,7 @@ export default function CommunityPage() {
             ) : postsError ? (
               <p role="alert" className="text-sm text-destructive">{postsError}</p>
             ) : (
-              <Feed trendingOnly posts={feedPosts} likedPosts={likedPosts} bookmarkedPosts={bookmarkedPosts} onToggleLike={toggleLike} onToggleBookmark={toggleBookmark} onCommentCreated={incrementPostCommentCount} />
+              <Feed currentUserId={user?.id} trendingOnly posts={feedPosts} likedPosts={likedPosts} bookmarkedPosts={bookmarkedPosts} onToggleLike={toggleLike} onToggleBookmark={toggleBookmark} onCommentCountChange={changePostCommentCount} onDeletePost={(id) => setFeedPosts((previous) => previous.filter((post) => post.id !== id))} />
             )
           )}
         </div>
@@ -450,7 +406,9 @@ export default function CommunityPage() {
             <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
               Keep it evidence-based, respectful, and practical. Cite sources when you can, and distinguish research from personal experience.
             </p>
-            <Button size="sm" variant="outline" className="mt-3 w-full">Read guidelines</Button>
+            <Button asChild size="sm" variant="outline" className="mt-3 w-full">
+              <Link href="/conduct">Read guidelines</Link>
+            </Button>
           </Card>
         </aside>
       </div>
@@ -458,58 +416,54 @@ export default function CommunityPage() {
   );
 }
 
-function SelectedMediaPreview({ file, onRemove }: { file: File; onRemove: () => void }) {
-  const [previewUrl, setPreviewUrl] = useState('');
-  const mediaType = getCommunityMediaType(file);
-
-  useEffect(() => {
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
-
-  return (
-    <div className="relative mt-3 max-w-md overflow-hidden rounded-xl border border-border/60 bg-secondary/30">
-      {previewUrl && mediaType === 'video' ? (
-        <video src={previewUrl} controls preload="metadata" className="max-h-64 w-full bg-black" />
-      ) : previewUrl ? (
-        <img src={previewUrl} alt="Selected post attachment preview" className="max-h-64 w-full object-contain" />
-      ) : null}
-      <div className="flex items-center justify-between gap-3 p-2 text-xs text-muted-foreground">
-        <span className="truncate">{file.name}</span>
-        <button type="button" onClick={onRemove} aria-label="Remove attachment" className="shrink-0 rounded p-1 hover:bg-secondary">
-          <X size={16} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function Feed({
   trendingOnly = false,
+  currentUserId,
   posts,
   likedPosts,
   bookmarkedPosts,
   onToggleLike,
   onToggleBookmark,
-  onCommentCreated,
+  onCommentCountChange,
+  onDeletePost,
 }: {
   trendingOnly?: boolean;
+  currentUserId?: string;
   posts: FeedPost[];
   likedPosts: Set<string>;
   bookmarkedPosts: Set<string>;
   onToggleLike: (postId: string) => void;
   onToggleBookmark: (postId: string) => void;
-  onCommentCreated: (postId: string) => void;
+  onCommentCountChange: (postId: string, change: number) => void;
+  onDeletePost: (postId: string) => void;
 }) {
   const [openComments, setOpenComments] = useState<Set<string>>(new Set());
   const [copiedPostId, setCopiedPostId] = useState('');
   const [shareError, setShareError] = useState('');
+  const [postActionError, setPostActionError] = useState('');
+  const [deletingPostId, setDeletingPostId] = useState('');
+  const deletePost = async (postId: string) => {
+    if (!window.confirm('Supprimer cette publication et son média partagé ?')) return;
+    setDeletingPostId(postId);
+    setPostActionError('');
+    try {
+      const response = await fetch(`/api/posts/${encodeURIComponent(postId)}`, { method: 'DELETE' });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Impossible de supprimer la publication.');
+      onDeletePost(postId);
+    } catch (error) {
+      console.error('Failed to delete community post:', error);
+      setPostActionError(error instanceof Error ? error.message : 'Impossible de supprimer la publication.');
+    } finally {
+      setDeletingPostId('');
+    }
+  };
   const list = trendingOnly
     ? [...posts].sort((a, b) => b.likes_count - a.likes_count)
     : posts;
   return (
     <div className="space-y-5">
+      {postActionError && <p role="alert" className="text-sm text-destructive">{postActionError}</p>}
       {list.map((post) => {
         const authorName = post.author?.full_name || post.author?.username || 'Community member';
         const isLiked = likedPosts.has(post.id);
@@ -532,6 +486,11 @@ function Feed({
                   {post.author?.username && <span className="text-sm text-muted-foreground">@{post.author.username}</span>}
                   <span className="text-sm text-muted-foreground">· {timeAgo(post.created_at)}</span>
                   {post.author && <FollowButton profileId={post.author.id} />}
+                  {currentUserId === post.author_id && (
+                    <Button type="button" variant="ghost" size="sm" className="ml-auto h-8 gap-1.5 text-destructive hover:text-destructive" disabled={deletingPostId === post.id} onClick={() => void deletePost(post.id)}>
+                      <Trash2 size={14} /> {deletingPostId === post.id ? 'Suppression…' : 'Supprimer'}
+                    </Button>
+                  )}
                 </div>
                 <p className="text-sm mt-2.5 leading-relaxed">{post.content}</p>
                 {(post.media_url || post.image_url) && (
@@ -603,7 +562,7 @@ function Feed({
                   </button>
                 </div>
                 {shareError && <p role="alert" className="mt-2 text-sm text-destructive">{shareError}</p>}
-                {openComments.has(post.id) && <PostComments postId={post.id} onCommentCreated={() => onCommentCreated(post.id)} />}
+                {openComments.has(post.id) && <PostComments postId={post.id} onCommentCountChange={(change) => onCommentCountChange(post.id, change)} />}
               </div>
             </div>
           </Card>

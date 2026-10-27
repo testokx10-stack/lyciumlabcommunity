@@ -20,6 +20,10 @@ DROP POLICY IF EXISTS "Users can create notifications as themselves" ON public.n
 CREATE POLICY "Users can create notifications as themselves"
   ON public.notifications FOR INSERT TO authenticated
   WITH CHECK (auth.uid() = actor_id);
+DROP POLICY IF EXISTS "Users can delete own notifications" ON public.notifications;
+CREATE POLICY "Users can delete own notifications"
+  ON public.notifications FOR DELETE TO authenticated
+  USING (auth.uid() = user_id);
 
 CREATE TABLE IF NOT EXISTS public.video_comments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -40,12 +44,17 @@ DROP POLICY IF EXISTS "Users can create their own video comments" ON public.vide
 CREATE POLICY "Users can create their own video comments"
   ON public.video_comments FOR INSERT TO authenticated
   WITH CHECK (auth.uid() = author_id);
+DROP POLICY IF EXISTS "Users can update their own video comments" ON public.video_comments;
+CREATE POLICY "Users can update their own video comments"
+  ON public.video_comments FOR UPDATE TO authenticated
+  USING (auth.uid() = author_id)
+  WITH CHECK (auth.uid() = author_id);
 DROP POLICY IF EXISTS "Users can delete their own video comments" ON public.video_comments;
 CREATE POLICY "Users can delete their own video comments"
   ON public.video_comments FOR DELETE TO authenticated
   USING (auth.uid() = author_id);
 GRANT SELECT ON public.video_comments TO anon, authenticated;
-GRANT INSERT, DELETE ON public.video_comments TO authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.video_comments TO authenticated;
 
 CREATE TABLE IF NOT EXISTS public.question_votes (
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,

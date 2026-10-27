@@ -5,12 +5,13 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const { id } = await params
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError) throw authError
+    if (authError && authError.name !== 'AuthSessionMissingError') throw authError
     
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -19,7 +20,7 @@ export async function POST(
     const { data: post, error: postError } = await supabase
       .from('posts')
       .select('author_id')
-      .eq('id', params.id)
+      .eq('id', id)
       .maybeSingle()
     if (postError) throw postError
     if (!post) return NextResponse.json({ error: 'Post not found.' }, { status: 404 })
@@ -28,7 +29,7 @@ export async function POST(
       .from('likes')
       .select('id')
       .eq('user_id', user.id)
-      .eq('post_id', params.id)
+      .eq('post_id', id)
       .maybeSingle()
     if (likeLookupError) throw likeLookupError
 
@@ -37,13 +38,13 @@ export async function POST(
         .from('likes')
         .delete()
         .eq('user_id', user.id)
-        .eq('post_id', params.id)
+        .eq('post_id', id)
 
       if (error) throw error
 
       const { count, error: countError } = await supabase.from('likes')
         .select('id', { count: 'exact', head: true })
-        .eq('post_id', params.id)
+        .eq('post_id', id)
       if (countError) throw countError
 
       return NextResponse.json({ liked: false, likes_count: count || 0 })
@@ -53,7 +54,7 @@ export async function POST(
       .from('likes')
       .insert({
         user_id: user.id,
-        post_id: params.id
+        post_id: id
       })
     if (error) throw error
 
@@ -61,7 +62,7 @@ export async function POST(
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: post.author_id,
         type: 'like',
-        reference_id: params.id,
+        reference_id: id,
         actor_id: user.id,
       })
       if (notificationError) console.error('Failed to notify post author about like:', notificationError)
@@ -69,7 +70,7 @@ export async function POST(
 
     const { count, error: countError } = await supabase.from('likes')
       .select('id', { count: 'exact', head: true })
-      .eq('post_id', params.id)
+      .eq('post_id', id)
     if (countError) throw countError
 
     return NextResponse.json({ liked: true, likes_count: count || 0 })
@@ -81,16 +82,17 @@ export async function POST(
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const { id } = await params
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     const { count, error } = await supabase
       .from('likes')
       .select('*', { count: 'exact', head: true })
-      .eq('post_id', params.id)
+      .eq('post_id', id)
 
     if (error) throw error
 
@@ -99,7 +101,7 @@ export async function GET(
       const { data, error: userLikeError } = await supabase
         .from('likes')
         .select('id')
-        .eq('post_id', params.id)
+        .eq('post_id', id)
         .eq('user_id', user.id)
         .maybeSingle()
       if (userLikeError) throw userLikeError

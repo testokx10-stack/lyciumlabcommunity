@@ -11,6 +11,10 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/components/auth/AuthProvider';
 
 export default function LoginPage() {
+  return <LoginForm />;
+}
+
+function LoginForm() {
   const { signIn } = useAuth();
   const router = useRouter();
   const [error, setError] = useState('');

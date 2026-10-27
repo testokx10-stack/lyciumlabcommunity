@@ -1,12 +1,10 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { BadgeCheck, MapPin, MessageCircle, UserRound } from 'lucide-react';
+import { BadgeCheck, MapPin, UserRound } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { FollowButton } from '@/components/site/follow-button';
-import { getMember, members, timeAgo } from '@/lib/data';
+import { timeAgo } from '@/lib/data';
 import { createClient } from '@/lib/supabase/server';
 
 type ProfileData = {
@@ -31,27 +29,17 @@ type ProfilePost = {
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export default async function ProfilePage({ params }: { params: { id: string } }) {
-  const demoMember = getMember(params.id);
+export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   let profile: ProfileData;
   let profilePosts: ProfilePost[] = [];
 
-  if (demoMember) {
-    profile = {
-      id: demoMember.id,
-      username: demoMember.handle,
-      full_name: demoMember.name,
-      avatar_url: demoMember.avatar,
-      bio: demoMember.bio,
-      location: demoMember.location,
-      role: demoMember.role,
-    };
-  } else if (uuidPattern.test(params.id)) {
-    const supabase = createClient();
+  if (uuidPattern.test(id)) {
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from('profiles')
       .select('id, username, full_name, avatar_url, bio, location, role')
-      .eq('id', params.id)
+      .eq('id', id)
       .maybeSingle();
 
     if (error) {
@@ -64,7 +52,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
     const { data: posts, error: postsError } = await supabase
       .from('posts')
       .select('id, content, tag, created_at, image_url, media_url, media_type')
-      .eq('author_id', params.id)
+      .eq('author_id', id)
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -103,10 +91,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
               </p>
             )}
             {profile.bio && <p className="mt-4 leading-relaxed">{profile.bio}</p>}
-            {!demoMember && <FollowButton profileId={profile.id} />}
-            <Button asChild className="mt-5 gap-2">
-              <Link href="/community"><MessageCircle size={16} /> Visit the community</Link>
-            </Button>
+            <div className="mt-5"><FollowButton profileId={profile.id} /></div>
           </div>
         </div>
       </Card>
@@ -131,9 +116,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
             </Card>
           )) : (
             <Card className="p-5 text-sm text-muted-foreground">
-              {demoMember
-                ? `${demoMember.name} is a featured community member.`
-                : 'No community posts yet.'}
+              No community posts yet.
             </Card>
           )}
         </div>

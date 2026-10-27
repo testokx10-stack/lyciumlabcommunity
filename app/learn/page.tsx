@@ -17,16 +17,17 @@ const resourceIcons = [
   FileText,
 ];
 
-export default function LearnPage({
+export default async function LearnPage({
   searchParams,
 }: {
-  searchParams: { type?: string; cat?: string };
+  searchParams: Promise<{ type?: string; cat?: string }>;
 }) {
-  const selectedType = learningResourceTypes.some((resource) => resource.type === searchParams.type)
-    ? searchParams.type
+  const { type, cat } = await searchParams;
+  const selectedType = learningResourceTypes.some((resource) => resource.type === type)
+    ? type
     : '';
-  const selectedCategory = categories.some((category) => category.slug === searchParams.cat)
-    ? searchParams.cat
+  const selectedCategory = categories.some((category) => category.slug === cat)
+    ? cat
     : '';
   const filteredResources = learningResources.filter((resource) => (
     (!selectedType || resource.type === selectedType) &&
@@ -86,15 +87,15 @@ export default function LearnPage({
           <div className="mb-10">
             <Link href={`/learn/${featured.id}`} className="group block">
             <Card className="overflow-hidden p-0 gap-0 card-hover grid md:grid-cols-2">
-              <div className="relative aspect-video md:aspect-auto overflow-hidden">
-                <img src={featured.cover} alt={featured.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <div className="relative grid aspect-video place-items-center overflow-hidden bg-gradient-to-br from-primary/10 via-accent/10 to-secondary text-primary/50 md:aspect-auto">
+                <BookOpen size={64} strokeWidth={1.25} />
                 <Badge className="absolute top-4 left-4 bg-background/90 text-foreground border-0 backdrop-blur-sm">En vedette</Badge>
               </div>
               <div className="p-6 lg:p-8 flex flex-col justify-center">
                 <Badge variant="secondary" className="mb-3">À découvrir · Ressource pédagogique</Badge>
                 <h2 className="font-display text-2xl lg:text-3xl font-semibold leading-tight tracking-tight group-hover:text-primary transition-colors">{featured.title}</h2>
                 <p className="mt-3 text-muted-foreground leading-relaxed">{featured.excerpt}</p>
-                <p className="mt-5 text-sm text-muted-foreground">{featured.readTime} de lecture · {featured.publishedAt}</p>
+                <p className="mt-5 text-sm text-muted-foreground">{featured.readTime} de lecture · Contenu éditorial</p>
               </div>
             </Card>
             </Link>

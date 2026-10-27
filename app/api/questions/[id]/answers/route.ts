@@ -5,10 +5,11 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const { id } = await params
+    const supabase = await createClient()
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
@@ -20,7 +21,7 @@ export async function GET(
         *,
         author:profiles!answers_author_id_fkey(id, username, full_name, avatar_url, role)
       `, { count: 'exact' })
-      .eq('question_id', params.id)
+      .eq('question_id', id)
       .order('accepted', { ascending: false })
       .order('created_at', { ascending: true })
       .range(offset, offset + limit - 1)
@@ -61,12 +62,13 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const { id } = await params
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError) throw authError
+    if (authError && authError.name !== 'AuthSessionMissingError') throw authError
     
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -85,7 +87,7 @@ export async function POST(
     const { data: question, error: questionError } = await supabase
       .from('questions')
       .select('author_id')
-      .eq('id', params.id)
+      .eq('id', id)
       .maybeSingle()
     if (questionError) throw questionError
     if (!question) return NextResponse.json({ error: 'Question not found.' }, { status: 404 })
@@ -93,7 +95,7 @@ export async function POST(
     const { data, error } = await supabase
       .from('answers')
       .insert({
-        question_id: params.id,
+        question_id: id,
         author_id: user.id,
         body: answerBody.trim()
       })
@@ -109,7 +111,7 @@ export async function POST(
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: question.author_id,
         type: 'answer',
-        reference_id: params.id,
+        reference_id: id,
         actor_id: user.id,
       })
       if (notificationError) console.error('Failed to notify question author about answer:', notificationError)

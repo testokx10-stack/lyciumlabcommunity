@@ -5,24 +5,25 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const { id } = await params
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (params.id === user.id) {
+    if (id === user.id) {
       return NextResponse.json({ error: 'Cannot follow yourself' }, { status: 400 })
     }
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id')
-      .eq('id', params.id)
+      .eq('id', id)
       .maybeSingle()
     if (profileError) throw profileError
     if (!profile) {
@@ -33,7 +34,7 @@ export async function POST(
       .from('follows')
       .select('id')
       .eq('follower_id', user.id)
-      .eq('following_id', params.id)
+      .eq('following_id', id)
       .maybeSingle()
     if (followError) throw followError
 
@@ -43,7 +44,7 @@ export async function POST(
         .from('follows')
         .delete()
         .eq('follower_id', user.id)
-        .eq('following_id', params.id)
+        .eq('following_id', id)
 
       if (error) throw error
 
@@ -54,7 +55,7 @@ export async function POST(
         .from('follows')
         .insert({
           follower_id: user.id,
-          following_id: params.id
+          following_id: id
         })
 
       if (error) throw error
@@ -63,7 +64,7 @@ export async function POST(
       const { error: notificationError } = await supabase
         .from('notifications')
         .insert({
-          user_id: params.id,
+          user_id: id,
           type: 'follow',
           reference_id: user.id,
           actor_id: user.id
@@ -80,17 +81,18 @@ export async function POST(
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const { id } = await params
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError) throw authError
+    if (authError && authError.name !== 'AuthSessionMissingError') throw authError
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id')
-      .eq('id', params.id)
+      .eq('id', id)
       .maybeSingle()
     if (profileError) throw profileError
     if (!profile) return NextResponse.json({ error: 'Profile not found.' }, { status: 404 })
@@ -101,7 +103,7 @@ export async function GET(
         .from('follows')
         .select('id')
         .eq('follower_id', user.id)
-        .eq('following_id', params.id)
+        .eq('following_id', id)
         .maybeSingle()
       if (error) throw error
       following = !!data
@@ -109,8 +111,8 @@ export async function GET(
 
     // Get follower/following counts
     const counts = await Promise.all([
-      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', params.id),
-      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', params.id)
+      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', id),
+      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', id)
     ])
     if (counts.some((result) => result.error)) throw counts.find((result) => result.error)?.error
     const followersCount = counts[0].count || 0

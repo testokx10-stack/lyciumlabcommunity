@@ -5,9 +5,9 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError) throw authError
+    if (authError && authError.name !== 'AuthSessionMissingError') throw authError
     if (!user) return NextResponse.json({ error: 'Connectez-vous pour modifier votre profil.' }, { status: 401 })
 
     const { data, error } = await supabase
@@ -35,9 +35,9 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError) throw authError
+    if (authError && authError.name !== 'AuthSessionMissingError') throw authError
     if (!user) return NextResponse.json({ error: 'Connectez-vous pour modifier votre profil.' }, { status: 401 })
 
     const body = await request.json()
@@ -102,7 +102,7 @@ export async function PATCH(request: Request) {
 }
 
 async function syncUserMetadata(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   updates: { full_name: string; bio: string | null; location: string | null; avatar_url: string | null }
 ) {
   const { error } = await supabase.auth.updateUser({

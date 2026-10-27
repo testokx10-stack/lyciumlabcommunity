@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Bell, MessageCircle, Send, Share2, ThumbsUp } from 'lucide-react';
+import { Bell, Check, MessageCircle, Pencil, Send, Share2, ThumbsUp, Trash2, X } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -12,6 +12,7 @@ import { timeAgo } from '@/lib/data';
 
 type VideoComment = {
   id: string;
+  author_id: string;
   content: string;
   created_at: string;
   author: {
@@ -33,6 +34,9 @@ export function VideoInteractions({ videoId }: { videoId: string }) {
   const [subscriptionError, setSubscriptionError] = useState('');
   const [sharing, setSharing] = useState(false);
   const [shareError, setShareError] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -92,6 +96,43 @@ export function VideoInteractions({ videoId }: { videoId: string }) {
       setCommentsError(error instanceof Error ? error.message : 'Impossible de publier le commentaire.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const saveEdit = async (commentId: string) => {
+    if (!editContent.trim() || savingEdit) return;
+    setSavingEdit(true);
+    setCommentsError('');
+    try {
+      const response = await fetch(`/api/videos/${encodeURIComponent(videoId)}/comments/${encodeURIComponent(commentId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: editContent }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Impossible de modifier le commentaire.');
+      setComments((previous) => previous.map((comment) => comment.id === commentId ? { ...comment, content: result.comment.content } : comment));
+      setEditingId(null);
+    } catch (error) {
+      console.error('Failed to edit video comment:', error);
+      setCommentsError(error instanceof Error ? error.message : 'Impossible de modifier le commentaire.');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const deleteComment = async (commentId: string) => {
+    if (!window.confirm('Supprimer ce commentaire ?')) return;
+    setCommentsError('');
+    try {
+      const response = await fetch(`/api/videos/${encodeURIComponent(videoId)}/comments/${encodeURIComponent(commentId)}`, { method: 'DELETE' });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Impossible de supprimer le commentaire.');
+      setComments((previous) => previous.filter((comment) => comment.id !== commentId));
+      setCommentCount((previous) => Math.max(0, previous - 1));
+    } catch (error) {
+      console.error('Failed to delete video comment:', error);
+      setCommentsError(error instanceof Error ? error.message : 'Impossible de supprimer le commentaire.');
     }
   };
 
@@ -185,7 +226,21 @@ export function VideoInteractions({ videoId }: { videoId: string }) {
                       <span className="font-medium">{name}</span>
                       <span className="text-xs text-muted-foreground">{timeAgo(comment.created_at)}</span>
                     </div>
-                    <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed">{comment.content}</p>
+                    {editingId === comment.id ? (
+                      <div className="mt-2 space-y-2">
+                        <Textarea value={editContent} onChange={(event) => setEditContent(event.target.value)} maxLength={10000} rows={2} />
+                        <div className="flex gap-2">
+                          <Button type="button" size="sm" disabled={savingEdit || !editContent.trim()} onClick={() => void saveEdit(comment.id)}><Check size={14} className="mr-1" />Enregistrer</Button>
+                          <Button type="button" size="sm" variant="ghost" disabled={savingEdit} onClick={() => setEditingId(null)}><X size={14} className="mr-1" />Annuler</Button>
+                        </div>
+                      </div>
+                    ) : <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed">{comment.content}</p>}
+                    {user?.id === comment.author_id && editingId !== comment.id && (
+                      <div className="mt-1 flex gap-2">
+                        <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => { setEditingId(comment.id); setEditContent(comment.content); }}><Pencil size={12} className="mr-1" />Modifier</Button>
+                        <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs text-destructive hover:text-destructive" onClick={() => void deleteComment(comment.id)}><Trash2 size={12} className="mr-1" />Supprimer</Button>
+                      </div>
+                    )}
                   </div>
                 </Card>
               );

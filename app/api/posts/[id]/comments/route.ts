@@ -5,10 +5,11 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const { id } = await params
+    const supabase = await createClient()
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
@@ -24,7 +25,7 @@ export async function GET(
           author:profiles!author_id(id, username, full_name, avatar_url, role)
         )
       `, { count: 'exact' })
-      .eq('post_id', params.id)
+      .eq('post_id', id)
       .is('parent_id', null)
       .order('created_at', { ascending: true })
       .range(offset, offset + limit - 1)
@@ -45,12 +46,13 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const { id } = await params
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError) throw authError
+    if (authError && authError.name !== 'AuthSessionMissingError') throw authError
     
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -69,7 +71,7 @@ export async function POST(
     const { data: post, error: postError } = await supabase
       .from('posts')
       .select('author_id')
-      .eq('id', params.id)
+      .eq('id', id)
       .maybeSingle()
     if (postError) throw postError
     if (!post) return NextResponse.json({ error: 'Post not found.' }, { status: 404 })
@@ -77,7 +79,7 @@ export async function POST(
     const { data, error } = await supabase
       .from('comments')
       .insert({
-        post_id: params.id,
+        post_id: id,
         author_id: user.id,
         content: content.trim(),
         parent_id: parent_id || null
@@ -94,7 +96,7 @@ export async function POST(
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: post.author_id,
         type: 'comment',
-        reference_id: params.id,
+        reference_id: id,
         actor_id: user.id,
       })
       if (notificationError) console.error('Failed to notify post author about comment:', notificationError)

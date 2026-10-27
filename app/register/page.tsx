@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
-import { Mail, Lock, User, MapPin, ArrowRight, Check } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Check } from 'lucide-react';
 import { Logo } from '@/components/site/logo';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,13 +12,16 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/components/auth/AuthProvider';
 
 const benefits = [
-  'Publiez des vidéos, des articles et des questions',
-  'Rejoignez des communautés et discussions thématiques',
-  'Sauvegardez et organisez des listes de lecture d\'apprentissage',
-  'Suivez des experts et obtenez des recommandations personnalisées',
+  'Consulter des ressources pédagogiques en français',
+  'Découvrir les catégories des sciences agricoles',
+  'Échanger avec la communauté agricole',
 ];
 
 export default function RegisterPage() {
+  return <RegistrationForm />;
+}
+
+function RegistrationForm() {
   const { signUp } = useAuth();
   const router = useRouter();
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -40,8 +43,7 @@ export default function RegisterPage() {
     const { error: signUpError, needsEmailConfirmation } = await signUp(
       String(formData.get('email')),
       String(formData.get('password')),
-      String(formData.get('name')),
-      String(formData.get('location') || '')
+      String(formData.get('name'))
     );
     setSubmitting(false);
 
@@ -65,10 +67,10 @@ export default function RegisterPage() {
         <div className="hidden lg:block sticky top-24">
           <Logo size="lg" />
           <h1 className="font-display text-4xl font-semibold tracking-tight mt-8 leading-tight text-balance">
-            Rejoignez 12 400 agriculteurs, chercheurs et passionnés.
+            Rejoignez une communauté qui partage les sciences agricoles.
           </h1>
           <p className="text-muted-foreground mt-4 leading-relaxed text-lg">
-            Gratuit pour toujours. Votre compte débloque toute la communauté Lycium Bio Lab, la bibliothèque vidéo et le hub de connaissances.
+            Créez un compte pour participer aux échanges, poser des questions et partager des ressources.
           </p>
           <ul className="mt-8 space-y-3">
             {benefits.map((b) => (
@@ -90,20 +92,11 @@ export default function RegisterPage() {
             <p className="text-sm text-muted-foreground mt-1.5">Cela prend moins d&apos;une minute.</p>
 
             <form className="space-y-4 mt-6" onSubmit={handleSubmit}>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nom complet</Label>
-                  <div className="relative">
-                    <User size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <Input id="name" name="name" autoComplete="name" placeholder="Jean Fermier" className="pl-10 h-11" required />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="location">Emplacement</Label>
-                  <div className="relative">
-                    <MapPin size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <Input id="location" name="location" autoComplete="address-level2" placeholder="Ville, Pays" className="pl-10 h-11" />
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="name">Nom complet</Label>
+                <div className="relative">
+                  <User size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input id="name" name="name" autoComplete="name" placeholder="Jean Fermier" className="pl-10 h-11" required />
                 </div>
               </div>
               <div className="space-y-2">
@@ -121,10 +114,13 @@ export default function RegisterPage() {
                 </div>
                 <p className="text-xs text-muted-foreground">Utilisez un mélange de lettres, de chiffres et de symboles.</p>
               </div>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Pour créer votre compte, nous utilisons votre nom et votre adresse e-mail. Votre mot de passe est transmis à Supabase pour l’authentification; nous ne l’utilisons pas à d’autres fins. Consultez la <Link href="/privacy" className="text-primary underline">notice de confidentialité</Link>.
+              </p>
               <div className="flex items-start gap-2">
                 <Checkbox id="terms" className="mt-0.5" checked={acceptedTerms} onCheckedChange={(checked) => setAcceptedTerms(checked === true)} />
                 <Label htmlFor="terms" className="text-sm text-muted-foreground font-normal cursor-pointer leading-relaxed">
-                  J&apos;accepte les <Link href="#" className="text-primary hover:underline">Conditions d&apos;utilisation</Link> et le <Link href="#" className="text-primary hover:underline">Code de conduite</Link>.
+                  J&apos;accepte les <Link href="/terms" className="text-primary hover:underline">Conditions d&apos;utilisation</Link> et le <Link href="/conduct" className="text-primary hover:underline">Code de conduite</Link>.
                 </Label>
               </div>
               {error && <p role="alert" className="text-sm text-destructive">{error}</p>}

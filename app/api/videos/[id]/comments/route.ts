@@ -5,14 +5,15 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const { id } = await params
+    const supabase = await createClient()
     const { data, error, count } = await supabase
       .from('video_comments')
       .select('*, author:profiles!video_comments_author_id_fkey(id, username, full_name, avatar_url, role)', { count: 'exact' })
-      .eq('video_id', params.id)
+      .eq('video_id', id)
       .order('created_at', { ascending: false })
       .limit(100)
 
@@ -30,12 +31,13 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const { id } = await params
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError) throw authError
+    if (authError && authError.name !== 'AuthSessionMissingError') throw authError
     if (!user) return NextResponse.json({ error: 'Log in to comment on videos.' }, { status: 401 })
 
     const body = await request.json()
@@ -48,7 +50,7 @@ export async function POST(
 
     const { data, error } = await supabase
       .from('video_comments')
-      .insert({ video_id: params.id, author_id: user.id, content: body.content.trim() })
+      .insert({ video_id: id, author_id: user.id, content: body.content.trim() })
       .select('*, author:profiles!video_comments_author_id_fkey(id, username, full_name, avatar_url, role)')
       .single()
 

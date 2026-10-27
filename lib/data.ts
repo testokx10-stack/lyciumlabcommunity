@@ -10,31 +10,24 @@ export type Video = {
   id: string;
   title: string;
   description: string;
-  thumbnail: string;
   duration: string;
   views: number;
   likes: number;
   comments: number;
-  publishedAt: string;
-  authorId: string;
+  thumbnail: string;
   category: string;
   tags: string[];
   featured?: boolean;
-  trending?: boolean;
-  embed?: string;
+  embed: string;
 };
 
 export type Article = {
   id: string;
   title: string;
   excerpt: string;
-  cover: string;
   category: string;
   readTime: string;
-  publishedAt: string;
-  authorId: string;
   type: 'guide' | 'research' | 'case-study' | 'tutorial' | 'article' | 'reference';
-  evidenceBased: boolean;
 };
 
 export type Member = {
@@ -89,13 +82,13 @@ export const categories: VideoCategory[] = [
   { slug: 'research', name: 'Recherche, expériences & études de terrain', description: 'Résultats évalués par les pairs, essais sur le terrain et méthodes expérimentales.', icon: 'Microscope', color: 'from-cyan-500 to-teal-600' },
 ];
 
-export const members: Member[] = [
+const demonstrationMembers: Member[] = [
   {
     id: 'u1',
     name: 'Dr. Amara Okonkwo',
     handle: 'amara.agro',
     avatar:
-      'https://images.pexels.com/photos/8185077/pexels-photo-8185077.jpeg?auto=compress&cs=tinysrgb&h=400&w=400',
+      '',
     role: 'expert',
     title: 'Spécialiste des sols · Doctorat en agronomie',
     bio: 'Recherche sur les microbiomes du sol et leur impact sur la résilience des cultures à travers l\'Afrique de l\'Ouest. Plus de 15 ans d\'études.',
@@ -109,7 +102,7 @@ export const members: Member[] = [
     name: 'Mateo Salazar',
     handle: 'mateo.grows',
     avatar:
-      'https://images.pexels.com/photos/29039798/pexels-photo-29039798.jpeg?auto=compress&cs=tinysrgb&h=400&w=400',
+      '',
     role: 'expert',
     title: 'Ingénieur en serre',
     bio: 'Conception de serres climatisées pour les régions à haute altitude et arides.',
@@ -123,7 +116,7 @@ export const members: Member[] = [
     name: 'Yuki Tanaka',
     handle: 'yuki.precision',
     avatar:
-      'https://images.pexels.com/photos/30907804/pexels-photo-30907804.jpeg?auto=compress&cs=tinysrgb&h=400&w=400',
+      '',
     role: 'expert',
     title: 'Spécialiste de l\'agriculture de précision',
     bio: 'Faire voler des drones et une surveillance des cultures guidée par IA pour les petits agriculteurs d\'Asie.',
@@ -137,7 +130,7 @@ export const members: Member[] = [
     name: 'Elena Petrova',
     handle: 'elena.irrigation',
     avatar:
-      'https://images.pexels.com/photos/35069661/pexels-photo-35069661.jpeg?auto=compress&cs=tinysrgb&h=400&w=400',
+      '',
     role: 'member',
     title: 'Consultante en irrigation',
     bio: 'Aide les exploitations à réduire leur consommation d\'eau de 40 % grâce à la conception d\'irrigation goutte-à-goutte et micro-irrigation.',
@@ -151,7 +144,7 @@ export const members: Member[] = [
     name: 'Kwame Mensah',
     handle: 'kwame.organics',
     avatar:
-      'https://images.pexels.com/photos/2382665/pexels-photo-2382665.jpeg?auto=compress&cs=tinysrgb&h=400&w=400',
+      '',
     role: 'member',
     title: 'Agriculteur biologique & éducateur',
     bio: 'Exploitation agricole biologique certifiée de 12 acres et ateliers de compostage.',
@@ -165,7 +158,7 @@ export const members: Member[] = [
     name: 'Dr. Sofia Bianchi',
     handle: 'sofia.pathology',
     avatar:
-      'https://images.pexels.com/photos/19136500/pexels-photo-19136500.jpeg?auto=compress&cs=tinysrgb&h=400&w=400',
+      '',
     role: 'moderator',
     title: 'Phytopathologiste · Doctorat',
     bio: 'Diagnostic des maladies des cultures et développement de stratégies intégrées de lutte contre les ravageurs.',
@@ -176,14 +169,26 @@ export const members: Member[] = [
   },
 ];
 
-export const videos: Video[] = [
+export const members: Member[] = [];
+
+type DemonstrationVideo = Video & {
+  thumbnail: string;
+  views: number;
+  likes: number;
+  comments: number;
+  publishedAt: string;
+  authorId: string;
+  trending?: boolean;
+};
+
+const demonstrationVideos: DemonstrationVideo[] = [
   {
     id: 'v1',
     title: 'Comprendre les microbiomes du sol : le moteur caché de la fertilité',
     description:
       'Plongez dans les réseaux bactériens et fongiques qui assurent le cycle des nutriments, et comment les favoriser par des cultures couvrantes et un travail du sol réduit.',
     thumbnail:
-      'https://images.pexels.com/photos/8851253/pexels-photo-8851253.jpeg?auto=compress&cs=tinysrgb&h=600&w=900',
+      '',
     duration: '18:42',
     views: 42100,
     likes: 1840,
@@ -202,7 +207,7 @@ featured: true,
     description:
       'Construction pas à pas d\'une serre à ventilation passive à l\'aide de matériaux locaux, y compris la conception de la masse thermique.',
     thumbnail:
-      'https://images.pexels.com/photos/20075896/pexels-photo-20075896.jpeg?auto=compress&cs=tinysrgb&h=600&w=900',
+      '',
     duration: '24:08',
     views: 38500,
     likes: 1620,
@@ -220,7 +225,7 @@ featured: true,
     description:
       'Configurer un drone multispectral, planifier des missions de survol et transformer les cartes NDVI en décisions concrètes d\'engrais et d\'irrigation.',
     thumbnail:
-      'https://images.pexels.com/photos/34182313/pexels-photo-34182313.jpeg?auto=compress&cs=tinysrgb&h=600&w=900',
+      '',
     duration: '31:15',
     views: 52900,
     likes: 2310,
@@ -239,7 +244,7 @@ featured: true,
     description:
       'Tout ce qu\'il faut savoir pour planifier, installer et entretenir un système d\'irrigation goutte-à-goutte pour des plates-bandes et des vergers.',
     thumbnail:
-      'https://images.pexels.com/photos/10606633/pexels-photo-10606633.jpeg?auto=compress&cs=tinysrgb&h=600&w=900',
+      '',
     duration: '15:30',
     views: 28400,
     likes: 1190,
@@ -257,7 +262,7 @@ featured: true,
     description:
       'Symptômes visuels, spectre d\'hôtes et approche intégrée pour maîtriser la tavelure précoce du tomate et de la pomme de terre.',
     thumbnail:
-      'https://images.pexels.com/photos/12642803/pexels-photo-12642803.jpeg?auto=compress&cs=tinysrgb&h=600&w=900',
+      '',
     duration: '12:18',
     views: 33700,
     likes: 1450,
@@ -275,7 +280,7 @@ featured: true,
     description:
       'Méthodes de compostage thermophile, gestion du rapport C:N et contrôle du compost pour une densité nutritive optimale.',
     thumbnail:
-      'https://images.pexels.com/photos/19136500/pexels-photo-19136500.jpeg?auto=compress&cs=tinysrgb&h=600&w=900',
+      '',
     duration: '20:55',
     views: 21800,
     likes: 980,
@@ -293,7 +298,7 @@ featured: true,
     description:
       'Utiliser des mètres portatifs de chlorophylle pour détecter un déficit d\'azote plusieurs semaines avant l\'apparition des symptômes.',
     thumbnail:
-      'https://images.pexels.com/photos/11465778/pexels-photo-11465778.jpeg?auto=compress&cs=tinysr&h=600&w=900',
+      '',
     duration: '09:47',
     views: 19200,
     likes: 760,
@@ -311,7 +316,7 @@ featured: true,
     description:
       'Fonctionnement des engrais revêtus par polymère, rentabilité et adaptation des courbes de libération à la demande des cultures.',
     thumbnail:
-      'https://images.pexels.com/photos/4031654/pexels-photo-4031654.jpeg?auto=compress&cs=tinysr&h=600&w=900',
+      '',
     duration: '16:22',
     views: 26100,
     likes: 1120,
@@ -329,7 +334,7 @@ featured: true,
     description:
       'Résultats d\'une expérience pluriannuelle comparant un système de culture couvrante trèfle-violette avec un témoin à repos dans une parcelle de maïs.',
     thumbnail:
-      'https://images.pexels.com/photos/36838598/pexels-photo-36838598.jpeg?auto=compress&cs=tinysr&h=600&w=900',
+      '',
     duration: '28:40',
     views: 31400,
     likes: 1390,
@@ -348,7 +353,7 @@ featured: true,
     description:
       'Principes de base de la culture de tissu — stérilisation, préparation des milieux et repiquage sous conditions aspergées.',
     thumbnail:
-      'https://images.pexels.com/photos/8851084/pexels-photo-8851084.jpeg?auto=compress&cs=tinysr&h=600&w=900',
+      '',
     duration: '22:13',
     views: 24800,
     likes: 1080,
@@ -361,12 +366,12 @@ trending: false,
     embed: 'https://www.youtube.com/embed/nr5pc5hYW4E',
   },
   {
-    id: 'v12',
+    id: 'v11',
     title: 'Irrigation pivot centre : planifier pour une efficacité maximale',
     description:
       'Exploiter les données d\'évapotranspiration et les capteurs d\'humidité du sol pour chronoréguler les passages du pivot sans lessivage des éléments nutritifs.',
     thumbnail:
-      'https://images.pexels.com/photos/20286981/pexels-photo-20286981.jpeg?auto=compress&cs=tinysr&h=600&w=900',
+      '',
     duration: '14:05',
     views: 17600,
     likes: 690,
@@ -384,7 +389,7 @@ trending: false,
     description:
       'Étude de cas d\'un système associant arbres fixateurs d\'azote, pâturages rotatifs et cultures, avec mesures de carbone du sol sur deux saisons.',
     thumbnail:
-      'https://images.pexels.com/photos/17765487/pexels-photo-17765487.jpeg?auto=compress&cs=tinysr&h=600&w=900',
+      '',
     duration: '19:33',
     views: 20300,
     likes: 920,
@@ -398,28 +403,42 @@ trending: false,
   },
 ];
 
-export const articles: Article[] = [
-  { id: 'a1', title: 'Le réseau mycorhizien : comment les champignons nourrissent vos cultures', excerpt: 'Les champignons mycorhiziens arbusculaires échangent des partenariats souterrains avec 80 % des plantes terrestres. Ce qu\'ils font, et comment cesser de les détruire.', cover: 'https://images.pexels.com/photos/12642803/pexels-photo-12642803.jpeg?auto=compress&cs=tinysrgb&h=600&w=900', category: 'soil-science', readTime: '8 min', publishedAt: '2026-10-14', authorId: 'u1', type: 'research', evidenceBased: true },
-  { id: 'a2', title: 'Guide pratique pour la planification de l\'irrigation goutte-à-goutte', excerpt: 'Instructions pas à pas pour calculer la demande hydrique des cultures à partir des données d\'évapotranspiration et du type de sol.', cover: 'https://images.pexels.com/photos/10606633/pexels-photo-10606633.jpeg?auto=compress&cs=tinysrf&h=600&w=900', category: 'irrigation', readTime: '12 min', publishedAt: '2026-10-11', authorId: 'u4', type: 'guide', evidenceBased: true },
-  { id: 'a3', title: 'Pourquoi l\'NDVI compte — et quand il trompe', excerpt: 'L\'indice de végétation en différence normalisée est la bête de somme de la télédétection. Ce guide couvre ce qu\'il mesure réellement et ses pièges classiques.', cover: 'https://images.pexels.com/photos/34182311/pexels-photo-34182311.jpeg?auto=compress&cs=tinysr&h=600&w=900', category: 'agtech', readTime: '10 min', publishedAt: '2026-10-09', authorId: 'u3', type: 'article', evidenceBased: true },
-  { id: 'a4', title: 'Ventilation des serres : la physique que tout cultivateur devrait savoir', excerpt: 'Des prises d\'air par rayonnement à la ventilation assistée par hélipast, les principes derrière le refroidissement d\'une serre sans trop consommer d\'énergie.', cover: 'https://images.pexels.com/photos/20075896/pexels-photo-20075896.jpeg?auto=compress&cs=tinysr&h=600&w=900', category: 'greenhouse', readTime: '9 min', publishedAt: '2026-10-06', authorId: 'u2', type: 'guide', evidenceBased: true },
-  { id: 'a5', title: 'Notes de terrain : deux saisons de soja sans labour à Tachkent', excerpt: 'Une étude de cas honnête documentant les rendements, la matière organique du sol et la pression des mauvaises herbes pendant une transition vers l\'absence de labour.', cover: 'https://images.pexels.com/photos/17765487/pexels-photo-17765487.jpeg?auto=compress&cs=tinysr&h=600&w=900', category: 'research', readTime: '15 min', publishedAt: '2026-10-03', authorId: 'u4', type: 'case-study', evidenceBased: true },
-  { id: 'a6', title: 'Compostage pour débutants : maîtriser le ratio C:N', excerpt: 'Un didacticiel amical illustré pour construire votre premier tas de compost thermophile — quoi ajouter, quoi éviter et comment savoir quand il est prêt.', cover: 'https://images.pexels.com/photos/19136500/pexels-photo-19136500.jpeg?auto=compress&cs=tinysr&h=600&w=900', category: 'sustainable', readTime: '7 min', publishedAt: '2026-09-30', authorId: 'u5', type: 'tutorial', evidenceBased: false },
-];
+export const videos: Video[] = demonstrationVideos.map(
+  ({ id, title, description, duration, views, likes, comments, category, tags, featured, embed }) => ({
+    id,
+    title,
+    description,
+    duration,
+    views,
+    likes,
+    comments,
+    thumbnail: `https://i.ytimg.com/vi/${embed.split('/').pop()}/hqdefault.jpg`,
+    category,
+    tags,
+    featured,
+    embed: embed.replace('www.youtube.com', 'www.youtube-nocookie.com'),
+  }),
+);
 
-export const posts: Post[] = [
-  { id: 'p1', authorId: 'u5', content: 'Venant de finir notre troisième lots de compost thermophile de la saison. Nous avons retourné le tas au jour 14 et atteint 65 °C — les thermophiles sont au travail. Je partage la feuille de calcul complète du C:N dans les commentaires.', image: 'https://images.pexels.com/photos/19136500/pexels-photo-19136500.jpeg?auto=compress&cs=tinysrf&h=400&w=800', likes: 142, comments: 23, shares: 11, postedAt: '2026-10-16', tag: 'compostage' },
-  { id: 'p2', authorId: 'u3', content: 'Nouvelle carte NDVI du vol d\'hier matin au-dessus du champ est. Remarquez le déséquilibre en azote évident dans la zone 3 — nous appliquerons un complémentazote l\'année prochaine. Les drones rapent leur coût dès que l\'on repère cela tôt.', image: 'https://images.pexels.com/photos/34182313/pexels-photo-34182313.jpeg?auto=compress&cs=tinysr&h=400&w=800', likes: 208, comments: 41, shares: 18, postedAt: '2026-10-15', tag: 'agriculture-precision' },
+export const articles: Article[] = [];
+
+const demonstrationPosts: Post[] = [
+  { id: 'p1', authorId: 'u5', content: 'Venant de finir notre troisième lots de compost thermophile de la saison. Nous avons retourné le tas au jour 14 et atteint 65 °C — les thermophiles sont au travail. Je partage la feuille de calcul complète du C:N dans les commentaires.', image: '', likes: 142, comments: 23, shares: 11, postedAt: '2026-10-16', tag: 'compostage' },
+  { id: 'p2', authorId: 'u3', content: 'Nouvelle carte NDVI du vol d\'hier matin au-dessus du champ est. Remarquez le déséquilibre en azote évident dans la zone 3 — nous appliquerons un complémentazote l\'année prochaine. Les drones rapent leur coût dès que l\'on repère cela tôt.', image: '', likes: 208, comments: 41, shares: 18, postedAt: '2026-10-15', tag: 'agriculture-precision' },
   { id: 'p3', authorId: 'u6', content: 'Rappel aux maraîchers de tomate en milieu humide : la pression de la tavelure précoce est élevée en ce moment. Inspectez les feuilles inférieures pour des lésions en anneaux coniques et retirez les tissus infectés. Les traitements au cuivre aident si on les attrape tôt.', likes: 176, comments: 34, shares: 22, postedAt: '2026-10-14', tag: 'maladie-des-plantes' },
-  { id: 'p4', authorId: 'u2', content: 'Installation terminée des prises d\'air sur la nouvelle serre. La climatisation passive est sous-estimée — à 32 °C dehors, l\'intérieur est resté sous 26 °C sans aucune électricité. Je partage le schéma d\'air embaumé très vite.', image: 'https://images.pexels.com/photos/6342330/pexels-photo-6342330.jpeg?auto=compress&cs=tinysr&h=400&w=800', likes: 134, comments: 19, shares: 8, postedAt: '2026-10-13', tag: 'serre' },
+  { id: 'p4', authorId: 'u2', content: 'Installation terminée des prises d\'air sur la nouvelle serre. La climatisation passive est sous-estimée — à 32 °C dehors, l\'intérieur est resté sous 26 °C sans aucune électricité. Je partage le schéma d\'air embaumé très vite.', image: '', likes: 134, comments: 19, shares: 8, postedAt: '2026-10-13', tag: 'serre' },
 ];
 
-export const questions: Question[] = [
+export const posts: Post[] = [];
+
+const demonstrationQuestions: Question[] = [
   { id: 'q1', authorId: 'u4', title: 'Comment étalonner un mètre de chlorophylle entre les différents stades de développement des cultures ?', body: 'Mes relevés SPAD varient énormément entre les stades végétatif et reproducteur sur la même parcelle de maïs. Existe-t-il un moyen standard de normaliser selon le stade de développement, ou faut-il des courbes spécifiques par culture ?', answers: 7, views: 1840, votes: 24, askedAt: '2026-10-15', tag: 'sciences-vegetales', answered: true },
   { id: 'q2', authorId: 'u5', title: 'Quelle est la meilleure culture couvrante pour un sol argileux compacté dans un climat tropical ?', body: 'J\'ai une parcelle de 2 hectares avec une argile fortement compactée. À la recherche d\'une culture couvrante à racines profondes et à forte croissance qui supporte de fortes précipitations et casse le compactage.', answers: 12, views: 2960, votes: 41, askedAt: '2026-10-12', tag: 'sciences-du-sol', answered: true },
   { id: 'q3', authorId: 'u2', title: 'Pourquoi la pression de mon système de goutte-à-goutte baisse-t-elle le long des latéraux ?', body: 'Le premier manchon est à 1,2 bar mais le dernier descend à 0,6. Le diamètre des tuyaux me semble juste. S\'agit-il d\'encrassement des goutteurs ou d\'un problème de filtration ?', answers: 5, views: 1120, votes: 18, askedAt: '2026-10-10', tag: 'irrigation', answered: false },
   { id: 'q4', authorId: 'u1', title: 'Existe-t-il des preuves évaluées par les pairs sur les préparations biodynamiques ?', body: 'Je suis régulièrement interrogé au sujet de l\'agriculture biodynamique. Y a-t-il des essais rigoureux et répétés montrant un effet sur le rendement ou la santé du sol au-delà de ce que le compost seul expliquerait ?', answers: 9, views: 4210, votes: 56, askedAt: '2026-10-08', tag: 'recherche', answered: true },
 ];
+
+export const questions: Question[] = [];
 
 export function getMember(id: string): Member | undefined {
   return members.find((m) => m.id === id);

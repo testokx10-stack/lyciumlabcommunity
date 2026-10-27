@@ -1,28 +1,26 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Eye, ChevronRight, ListChecks } from 'lucide-react';
+import { ChevronRight, Eye, ListChecks, MessageCircle, ThumbsUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { VideoCardCompact } from '@/components/site/video-card';
-import { MemberAvatarRow } from '@/components/site/member-card';
-import { FollowButton } from '@/components/site/follow-button';
+import { YouTubePlayer } from '@/components/site/youtube-player';
 import { VideoInteractions } from '@/components/site/video-interactions';
-import { videos, getMember, getCategory, formatCount, formatDate, members } from '@/lib/data';
+import { videos, formatCount, getCategory } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
 export function generateStaticParams() {
   return videos.map((v) => ({ id: v.id }));
 }
 
-export default function VideoDetailPage({ params }: { params: { id: string } }) {
-  const video = videos.find((v) => v.id === params.id);
+export default async function VideoDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const video = videos.find((v) => v.id === id);
   if (!video) notFound();
 
-  const author = getMember(video.authorId);
   const category = getCategory(video.category);
   const related = videos.filter((v) => v.id !== video.id && v.category === video.category).slice(0, 4);
-  const moreFromAuthor = videos.filter((v) => v.id !== video.id && v.authorId === video.authorId).slice(0, 3);
   const continueWatching = videos.filter((v) => v.id !== video.id).slice(0, 4);
 
   return (
@@ -40,25 +38,17 @@ export default function VideoDetailPage({ params }: { params: { id: string } }) 
         <div className="min-w-0">
           {/* Player */}
           <div className="relative aspect-video rounded-2xl overflow-hidden bg-black shadow-2xl shadow-primary/10">
-            <iframe
-              src={video.embed}
-              title={video.title}
-              className="h-full w-full"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            />
+            <YouTubePlayer video={video} />
           </div>
 
           {/* Title + meta */}
           <h1 className="font-display text-2xl lg:text-3xl font-semibold leading-tight tracking-tight mt-5">
             {video.title}
           </h1>
-          <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground tabular-nums">
-            <span className="flex items-center gap-1.5"><Eye size={15} /> {formatCount(video.views)} vues</span>
+          <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground">
+            <span>{video.duration}</span>
             <span>·</span>
-            <span>{formatDate(video.publishedAt)}</span>
+            <span>Vidéo YouTube</span>
             {category && (
               <>
                 <span>·</span>
@@ -68,11 +58,10 @@ export default function VideoDetailPage({ params }: { params: { id: string } }) 
               </>
             )}
           </div>
-
-          {/* Author */}
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <MemberAvatarRow member={author!} size={48} />
-            {author && <FollowButton profileId={author.id} />}
+          <div className="mt-4 flex flex-wrap items-center gap-4 text-sm tabular-nums text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5"><Eye size={15} /> {formatCount(video.views)} vues</span>
+            <span className="inline-flex items-center gap-1.5"><ThumbsUp size={15} /> {formatCount(video.likes)} j’aime</span>
+            <span className="inline-flex items-center gap-1.5"><MessageCircle size={15} /> {video.comments} commentaires YouTube</span>
           </div>
 
           {/* Description */}
@@ -85,9 +74,7 @@ export default function VideoDetailPage({ params }: { params: { id: string } }) 
             </div>
           </Card>
 
-          <div className="mt-5">
-            <VideoInteractions videoId={video.id} />
-          </div>
+          <div className="mt-5"><VideoInteractions videoId={video.id} /></div>
         </div>
 
         {/* Sidebar */}
@@ -110,19 +97,6 @@ export default function VideoDetailPage({ params }: { params: { id: string } }) 
                 ))}
               </div>
             </div>
-          )}
-          {moreFromAuthor.length > 0 && (
-            <>
-              <Separator />
-              <div>
-                <h3 className="text-sm font-semibold mb-3">Plus de {author?.name}</h3>
-                <div className="space-y-4">
-                  {moreFromAuthor.map((v) => (
-                    <VideoCardCompact key={v.id} video={v} />
-                  ))}
-                </div>
-              </div>
-            </>
           )}
         </aside>
       </div>

@@ -5,12 +5,13 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const { id } = await params
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError) throw authError
+    if (authError && authError.name !== 'AuthSessionMissingError') throw authError
     if (!user) return NextResponse.json({ error: 'Log in to vote on answers.' }, { status: 401 })
 
     const body = await request.json()
@@ -21,7 +22,7 @@ export async function POST(
     const { data: answer, error: answerError } = await supabase
       .from('answers')
       .select('id')
-      .eq('id', params.id)
+      .eq('id', id)
       .maybeSingle()
     if (answerError) throw answerError
     if (!answer) return NextResponse.json({ error: 'Answer not found.' }, { status: 404 })
@@ -30,7 +31,7 @@ export async function POST(
       .from('answer_votes')
       .select('vote')
       .eq('user_id', user.id)
-      .eq('answer_id', params.id)
+      .eq('answer_id', id)
       .maybeSingle()
     if (existingVoteError) throw existingVoteError
 
@@ -38,14 +39,14 @@ export async function POST(
       const { error } = await supabase.from('answer_votes')
         .delete()
         .eq('user_id', user.id)
-        .eq('answer_id', params.id)
+        .eq('answer_id', id)
       if (error) throw error
       return NextResponse.json({ vote: null })
     }
 
     const { error } = await supabase.from('answer_votes').upsert({
       user_id: user.id,
-      answer_id: params.id,
+      answer_id: id,
       vote: body.vote,
     }, { onConflict: 'user_id,answer_id' })
     if (error) throw error

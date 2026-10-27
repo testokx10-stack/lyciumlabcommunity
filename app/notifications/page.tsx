@@ -37,6 +37,10 @@ function notificationHref(notification: Notification) {
 }
 
 export default function NotificationsPage() {
+  return <NotificationInbox />;
+}
+
+function NotificationInbox() {
   const { user, loading: authLoading } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);

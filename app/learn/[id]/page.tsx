@@ -1,13 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Clock, Calendar, BadgeCheck, ArrowLeft, Bookmark, Share2, ThumbsUp, MessageCircle, ChevronRight, BookOpen } from 'lucide-react';
+import { Clock, ChevronRight, BookOpen } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import { ArticleCard } from '@/components/site/article-card';
-import { getMember, getCategory, formatDate } from '@/lib/data';
+import { getCategory } from '@/lib/data';
 import { learningResources, learningResourceSections } from '@/lib/learning-resources';
 
 export function generateStaticParams() {
@@ -16,18 +13,18 @@ export function generateStaticParams() {
 
 const typeLabel: Record<string, string> = {
   guide: 'Guide pratique',
-  research: 'Résumé de recherche',
-  'case-study': 'Étude de cas',
+  research: 'Synthèse pédagogique',
+  'case-study': 'Exemple pédagogique',
   tutorial: 'Tutoriel',
   article: 'Article',
   reference: 'Référence pratique',
 };
 
-export default function ArticlePage({ params }: { params: { id: string } }) {
-  const article = learningResources.find((a) => a.id === params.id);
+export default async function ArticlePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const article = learningResources.find((a) => a.id === id);
   if (!article) notFound();
 
-  const author = getMember(article.authorId)!;
   const category = getCategory(article.category);
   const related = learningResources.filter((a) => a.id !== article.id && a.category === article.category).slice(0, 3);
   const sections = learningResourceSections[article.id] || [];
@@ -41,14 +38,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
       </nav>
 
       <div className="flex items-center gap-2 mb-4">
-        <Badge variant="secondary">{typeLabel[article.type]}</Badge>
-        {article.evidenceBased ? (
-          <Badge variant="outline" className="gap-1 border-accent/30 text-accent">
-            <BadgeCheck size={12} /> Basé sur des preuves
-          </Badge>
-        ) : (
-          <Badge variant="outline">Ressource pédagogique</Badge>
-        )}
+        <Badge variant="secondary">Ressource pédagogique · {typeLabel[article.type]}</Badge>
       </div>
 
       <h1 className="font-display text-3xl lg:text-4xl font-semibold leading-tight tracking-tight text-balance">
@@ -57,26 +47,12 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
       <p className="mt-4 text-lg text-muted-foreground leading-relaxed">{article.excerpt}</p>
 
       <div className="flex items-center justify-between flex-wrap gap-4 mt-6 pb-6 border-b border-border/60">
-        <div className="flex items-center gap-3">
-          <Link href={`/profile/${author.id}`}>
-            <Avatar className="h-11 w-11">
-              <AvatarImage src={author.avatar} alt={author.name} />
-              <AvatarFallback>{author.name.slice(0, 2)}</AvatarFallback>
-            </Avatar>
-          </Link>
-          <div>
-            <Link href={`/profile/${author.id}`} className="text-sm font-medium hover:text-primary transition-colors">{author.name}</Link>
-            <p className="text-xs text-muted-foreground">{author.title}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground tabular-nums">
-          <span className="flex items-center gap-1"><Calendar size={14} /> {formatDate(article.publishedAt)}</span>
-          <span className="flex items-center gap-1"><Clock size={14} /> {article.readTime}</span>
-        </div>
+        <p className="text-sm text-muted-foreground">Contenu éditorial · Lycium Bio Lab</p>
+        <span className="flex items-center gap-1 text-sm text-muted-foreground"><Clock size={14} /> {article.readTime}</span>
       </div>
 
-      <div className="relative aspect-[16/9] rounded-2xl overflow-hidden my-8">
-        <img src={article.cover} alt={article.title} className="h-full w-full object-cover" />
+      <div className="my-8 grid aspect-[16/9] place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-accent/10 to-secondary text-primary/50">
+        <BookOpen size={72} strokeWidth={1.25} />
       </div>
 
       <article className="prose prose-neutral max-w-none">
@@ -97,31 +73,6 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
           </p>
         </Card>
       </article>
-
-      {/* Actions */}
-      <div className="flex flex-wrap gap-2 mt-8 pt-6 border-t border-border/60">
-        <Button variant="outline" size="sm" className="gap-1.5"><ThumbsUp size={15} /> Utile</Button>
-        <Button variant="outline" size="sm" className="gap-1.5"><MessageCircle size={15} /> Discuter</Button>
-        <Button variant="outline" size="sm" className="gap-1.5"><Share2 size={15} /> Partager</Button>
-        <Button variant="outline" size="sm" className="gap-1.5"><Bookmark size={15} /> Enregistrer</Button>
-      </div>
-
-      {/* Author card */}
-      <Card className="p-5 mt-8">
-        <div className="flex items-start gap-4">
-          <Avatar className="h-14 w-14">
-            <AvatarImage src={author.avatar} alt={author.name} />
-            <AvatarFallback>{author.name.slice(0, 2)}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <p className="text-xs text-muted-foreground">Rédigé par</p>
-            <Link href={`/profile/${author.id}`} className="font-semibold hover:text-primary transition-colors">{author.name}</Link>
-            <p className="text-sm text-muted-foreground mt-0.5">{author.title}</p>
-            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{author.bio}</p>
-          </div>
-          <Button size="sm" variant="outline">Suivre</Button>
-        </div>
-      </Card>
 
       {/* Related */}
       {related.length > 0 && (

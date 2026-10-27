@@ -9,7 +9,7 @@ interface AuthContextType {
   session: Session | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
-  signUp: (email: string, password: string, fullName: string, location?: string) => Promise<{ error: Error | null; needsEmailConfirmation: boolean }>
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null; needsEmailConfirmation: boolean }>
   signOut: () => Promise<void>
   refreshUser: () => Promise<void>
 }
@@ -64,14 +64,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error }
   }
 
-  const signUp = async (email: string, password: string, fullName: string, location?: string) => {
+  const signUp = async (email: string, password: string, fullName: string) => {
     if (!hasSupabaseConfig) return { error: new Error('Supabase is not configured'), needsEmailConfirmation: false }
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/community`,
-        data: { full_name: fullName, location }
+        data: { full_name: fullName }
       }
     })
     return { error, needsEmailConfirmation: !data.session }

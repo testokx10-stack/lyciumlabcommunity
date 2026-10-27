@@ -3,13 +3,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Search, Menu, X, Plus, Bell, Settings } from 'lucide-react';
+import { Search, Menu, X } from 'lucide-react';
 import { Logo } from './logo';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/components/auth/AuthProvider';
 import { cn } from '@/lib/utils';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { NotificationBell } from '@/components/site/notification-bell';
 
 const nav = [
   { label: 'Accueil', href: '/' },
@@ -19,7 +16,6 @@ const nav = [
 ];
 
 export function SiteHeader() {
-  const { user, loading: authLoading, signOut } = useAuth();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -75,33 +71,6 @@ export function SiteHeader() {
                 <Search size={19} />
               </span>
             </Link>
-            <div className="hidden sm:block"><NotificationBell /></div>
-            <Button asChild size="sm" className="hidden sm:inline-flex gap-1.5">
-              <Link href="/upload">
-                <Plus size={16} /> Téléverser
-              </Link>
-            </Button>
-            {!authLoading && (
-              user ? (
-                <div className="hidden sm:flex items-center gap-2">
-                  <Link href={`/profile/${user.id}`} aria-label="Mon profil">
-                    <Avatar className="h-8 w-8 border border-border">
-                      <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name || 'Profil'} />
-                      <AvatarFallback>{(user.user_metadata.full_name || user.email || 'U').slice(0, 2).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                  </Link>
-                  <Button asChild variant="ghost" size="icon" aria-label="Paramètres du compte">
-                    <Link href="/settings"><Settings size={17} /></Link>
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => void signOut()}>Déconnexion</Button>
-                </div>
-              ) : (
-                <div className="hidden sm:flex items-center gap-1">
-                  <Button asChild variant="ghost" size="sm"><Link href="/login">Connexion</Link></Button>
-                  <Button asChild size="sm"><Link href="/register">Créer un compte</Link></Button>
-                </div>
-              )
-            )}
             <Button
               variant="ghost"
               size="icon"
@@ -140,30 +109,9 @@ export function SiteHeader() {
           })}
           <div className="flex gap-2 mt-2 pt-3 border-t border-border/60">
             <Button asChild variant="outline" size="sm" className="flex-1 gap-1.5">
-              <Link href={user ? '/notifications' : '/login'}><Bell size={16} /> Notifications</Link>
-            </Button>
-            <Button asChild variant="outline" size="sm" className="flex-1 gap-1.5">
               <Link href="/search"><Search size={16} /> Recherche</Link>
             </Button>
-            <Button asChild size="sm" className="flex-1 gap-1.5">
-              <Link href="/upload"><Plus size={16} /> Téléverser</Link>
-            </Button>
           </div>
-          {!authLoading && (
-            <div className="flex gap-2 mt-2">
-              {user ? (
-                <>
-                  <Button asChild variant="outline" size="sm" className="flex-1 gap-1.5"><Link href="/settings"><Settings size={16} /> Paramètres du compte</Link></Button>
-                  <Button variant="outline" size="sm" className="flex-1" onClick={() => void signOut()}>Déconnexion</Button>
-                </>
-              ) : (
-                <>
-                  <Button asChild variant="outline" size="sm" className="flex-1"><Link href="/login">Connexion</Link></Button>
-                  <Button asChild size="sm" className="flex-1"><Link href="/register">Créer un compte</Link></Button>
-                </>
-              )}
-            </div>
-          )}
         </nav>
       </div>
     </header>

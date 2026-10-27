@@ -25,6 +25,10 @@ type ProfileForm = {
 const emptyProfile: ProfileForm = { full_name: '', bio: '', location: '', avatar_url: '' };
 
 export default function SettingsPage() {
+  return <AccountSettings />;
+}
+
+function AccountSettings() {
   const { user, loading: authLoading, refreshUser } = useAuth();
   const [profile, setProfile] = useState<ProfileForm>(emptyProfile);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);

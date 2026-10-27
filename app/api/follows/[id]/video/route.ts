@@ -5,10 +5,11 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const { id } = await params
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
@@ -19,7 +20,7 @@ export async function POST(
       .from('video_subscriptions')
       .select('id')
       .eq('user_id', user.id)
-      .eq('video_id', params.id)
+      .eq('video_id', id)
       .maybeSingle()
     if (subscriptionError) throw subscriptionError
 
@@ -29,7 +30,7 @@ export async function POST(
         .from('video_subscriptions')
         .delete()
         .eq('user_id', user.id)
-        .eq('video_id', params.id)
+        .eq('video_id', id)
 
       if (error) throw error
 
@@ -40,7 +41,7 @@ export async function POST(
         .from('video_subscriptions')
         .insert({
           user_id: user.id,
-          video_id: params.id
+          video_id: id
         })
 
       if (error) throw error
@@ -59,10 +60,11 @@ export async function POST(
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const { id } = await params
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     let subscribed = false
@@ -71,7 +73,7 @@ export async function GET(
         .from('video_subscriptions')
         .select('id')
         .eq('user_id', user.id)
-        .eq('video_id', params.id)
+        .eq('video_id', id)
         .maybeSingle()
       if (error) throw error
       subscribed = !!data

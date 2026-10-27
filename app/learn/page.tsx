@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { ArticleListItem } from '@/components/site/article-card';
+import { ResourceArtwork } from '@/components/site/resource-artwork';
 import { categories } from '@/lib/data';
 import { learningResources, learningResourceTypes } from '@/lib/learning-resources';
 
@@ -87,8 +88,8 @@ export default async function LearnPage({
           <div className="mb-10">
             <Link href={`/learn/${featured.id}`} className="group block">
             <Card className="overflow-hidden p-0 gap-0 card-hover grid md:grid-cols-2">
-              <div className="relative grid aspect-video place-items-center overflow-hidden bg-gradient-to-br from-primary/10 via-accent/10 to-secondary text-primary/50 md:aspect-auto">
-                <BookOpen size={64} strokeWidth={1.25} />
+              <div className="relative overflow-hidden">
+                <ResourceArtwork resourceId={featured.id} className="md:aspect-auto md:h-full" />
                 <Badge className="absolute top-4 left-4 bg-background/90 text-foreground border-0 backdrop-blur-sm">En vedette</Badge>
               </div>
               <div className="p-6 lg:p-8 flex flex-col justify-center">

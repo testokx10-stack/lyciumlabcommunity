@@ -4,6 +4,7 @@ import { Clock, ChevronRight, BookOpen } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArticleCard } from '@/components/site/article-card';
+import { ResourceArtwork } from '@/components/site/resource-artwork';
 import { getCategory } from '@/lib/data';
 import { learningResources, learningResourceSections } from '@/lib/learning-resources';
 
@@ -51,9 +52,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ id: st
         <span className="flex items-center gap-1 text-sm text-muted-foreground"><Clock size={14} /> {article.readTime}</span>
       </div>
 
-      <div className="my-8 grid aspect-[16/9] place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-accent/10 to-secondary text-primary/50">
-        <BookOpen size={72} strokeWidth={1.25} />
-      </div>
+      <ResourceArtwork resourceId={article.id} className="my-8 overflow-hidden rounded-2xl" />
 
       <article className="prose prose-neutral max-w-none">
         {sections.map((section) => (

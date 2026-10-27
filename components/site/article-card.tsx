@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { Clock, ArrowUpRight, BookOpen, FileText } from 'lucide-react';
+import { Clock, ArrowUpRight, FileText } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ResourceArtwork } from '@/components/site/resource-artwork';
 import { Article, getCategory } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
@@ -20,8 +21,8 @@ export function ArticleCard({ article, className }: { article: Article; classNam
   return (
     <Link href={`/learn/${article.id}`} className={cn('group block', className)}>
       <Card className="overflow-hidden card-hover p-0 gap-0 h-full flex flex-col">
-        <div className="relative grid aspect-[16/9] place-items-center overflow-hidden bg-gradient-to-br from-primary/10 via-accent/10 to-secondary text-primary/50">
-          <BookOpen size={42} strokeWidth={1.5} />
+        <div className="relative overflow-hidden">
+          <ResourceArtwork resourceId={article.id} />
           <div className="absolute top-3 left-3 flex gap-1.5">
             <Badge className="bg-background/90 text-foreground border-0 backdrop-blur-sm">
               <FileText size={12} className="mr-1" /> Ressource pédagogique
@@ -54,9 +55,7 @@ export function ArticleCard({ article, className }: { article: Article; classNam
 export function ArticleListItem({ article }: { article: Article }) {
   return (
     <Link href={`/learn/${article.id}`} className="group flex items-start gap-4 py-4">
-      <div className="grid w-28 shrink-0 aspect-[16/9] place-items-center rounded-lg bg-gradient-to-br from-primary/10 via-accent/10 to-secondary text-primary/50">
-        <BookOpen size={22} strokeWidth={1.5} />
-      </div>
+      <ResourceArtwork resourceId={article.id} compact className="w-28 shrink-0" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
           <span className="text-accent font-medium">{typeLabel[article.type]}</span>

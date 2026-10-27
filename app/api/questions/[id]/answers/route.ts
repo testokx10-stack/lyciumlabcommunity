@@ -82,6 +82,14 @@ export async function POST(
       return NextResponse.json({ error: 'Answers must be 10,000 characters or fewer.' }, { status: 400 })
     }
 
+    const { data: question, error: questionError } = await supabase
+      .from('questions')
+      .select('author_id')
+      .eq('id', params.id)
+      .maybeSingle()
+    if (questionError) throw questionError
+    if (!question) return NextResponse.json({ error: 'Question not found.' }, { status: 404 })
+
     const { data, error } = await supabase
       .from('answers')
       .insert({
@@ -96,6 +104,16 @@ export async function POST(
       .single()
 
     if (error) throw error
+
+    if (question.author_id !== user.id) {
+      const { error: notificationError } = await supabase.from('notifications').insert({
+        user_id: question.author_id,
+        type: 'answer',
+        reference_id: params.id,
+        actor_id: user.id,
+      })
+      if (notificationError) console.error('Failed to notify question author about answer:', notificationError)
+    }
 
     return NextResponse.json({ answer: data }, { status: 201 })
   } catch (error) {

@@ -9,8 +9,19 @@ import { ArticleCard } from '@/components/site/article-card';
 import { MemberCard } from '@/components/site/member-card';
 import { categories, videos, members, formatCount } from '@/lib/data';
 import { learningResources } from '@/lib/learning-resources';
+import { createClient } from '@/lib/supabase/server';
 
-export default function Home() {
+export default async function Home() {
+  const supabase = createClient();
+  const [membersResult, communityVideosResult] = await Promise.all([
+    supabase.from('profiles').select('id', { count: 'exact', head: true }),
+    supabase.from('posts').select('id', { count: 'exact', head: true }).eq('media_type', 'video'),
+  ]);
+  if (membersResult.error) console.error('Failed to load homepage member count:', membersResult.error);
+  if (communityVideosResult.error) console.error('Failed to load homepage video count:', communityVideosResult.error);
+
+  const memberCount = membersResult.error ? null : membersResult.count;
+  const videoCount = communityVideosResult.error ? null : videos.length + (communityVideosResult.count || 0);
   const featured = videos.filter((v) => v.featured);
   const trending = videos.filter((v) => v.trending).slice(0, 4);
   const latestArticles = learningResources.slice(0, 3);
@@ -47,9 +58,9 @@ export default function Home() {
               </div>
 
               <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-muted-foreground">
-                <span className="flex items-center gap-2"><Leaf size={16} className="text-accent" /> 10 catégories spécialisées</span>
-                <span className="flex items-center gap-2"><Users size={16} className="text-accent" /> 12K+ membres</span>
-                <span className="flex items-center gap-2"><Play size={16} className="text-accent" /> 850+ vidéos</span>
+                <span className="flex items-center gap-2"><Leaf size={16} className="text-accent" /> {categories.length} catégories spécialisées</span>
+                <span className="flex items-center gap-2"><Users size={16} className="text-accent" /> {memberCount === null ? 'Indisponible' : memberCount.toLocaleString('fr-FR')} membres</span>
+                <span className="flex items-center gap-2"><Play size={16} className="text-accent" /> {videoCount === null ? 'Indisponible' : videoCount.toLocaleString('fr-FR')} vidéos disponibles</span>
               </div>
             </div>
 

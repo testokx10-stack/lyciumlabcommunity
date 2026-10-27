@@ -7,6 +7,8 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: Request) {
   try {
     const supabase = createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError) throw authError
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
@@ -30,8 +32,20 @@ export async function GET(request: Request) {
 
     if (error) throw error
 
+    const postIds = (data || []).map((post) => post.id)
+    const { data: likes, error: likesError } = user && postIds.length
+      ? await supabase.from('likes').select('post_id').eq('user_id', user.id).in('post_id', postIds)
+      : { data: [], error: null }
+    if (likesError) throw likesError
+
+    const likedPostIds = new Set((likes || []).map((like) => like.post_id))
+    const posts = (data || []).map((post) => ({
+      ...post,
+      user_liked: likedPostIds.has(post.id),
+    }))
+
     return NextResponse.json({ 
-      posts: data || [], 
+      posts,
       total: count || 0,
       page,
       limit

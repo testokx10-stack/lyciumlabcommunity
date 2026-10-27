@@ -23,7 +23,7 @@ export async function GET(
           *,
           author:profiles!author_id(id, username, full_name, avatar_url, role)
         )
-      `)
+      `, { count: 'exact' })
       .eq('post_id', params.id)
       .is('parent_id', null)
       .order('created_at', { ascending: true })
@@ -49,7 +49,8 @@ export async function POST(
 ) {
   try {
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError) throw authError
     
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -58,9 +59,20 @@ export async function POST(
     const body = await request.json()
     const { content, parent_id } = body
 
-    if (!content?.trim()) {
+    if (typeof content !== 'string' || !content.trim()) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
     }
+    if (content.length > 10000) {
+      return NextResponse.json({ error: 'Comments must be 10,000 characters or fewer.' }, { status: 400 })
+    }
+
+    const { data: post, error: postError } = await supabase
+      .from('posts')
+      .select('author_id')
+      .eq('id', params.id)
+      .maybeSingle()
+    if (postError) throw postError
+    if (!post) return NextResponse.json({ error: 'Post not found.' }, { status: 404 })
 
     const { data, error } = await supabase
       .from('comments')
@@ -78,9 +90,19 @@ export async function POST(
 
     if (error) throw error
 
+    if (post.author_id !== user.id) {
+      const { error: notificationError } = await supabase.from('notifications').insert({
+        user_id: post.author_id,
+        type: 'comment',
+        reference_id: params.id,
+        actor_id: user.id,
+      })
+      if (notificationError) console.error('Failed to notify post author about comment:', notificationError)
+    }
+
     return NextResponse.json({ comment: data }, { status: 201 })
   } catch (error) {
     console.error('Error creating comment:', error)
-    return NextResponse.json({ error: 'Failed to create comment' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to create comment', details: error instanceof Error ? error.message : 'Unexpected database error' }, { status: 500 })
   }
 }

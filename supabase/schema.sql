@@ -191,6 +191,7 @@ CREATE POLICY "Users can unlike" ON likes FOR DELETE USING (auth.uid() = user_id
 -- Notifications policies
 CREATE POLICY "Users can view own notifications" ON notifications FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can update own notifications" ON notifications FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can create notifications as themselves" ON notifications FOR INSERT WITH CHECK (auth.uid() = actor_id);
 
 -- Video subscriptions policies
 CREATE POLICY "Subscriptions viewable by user" ON video_subscriptions FOR SELECT USING (auth.uid() = user_id);

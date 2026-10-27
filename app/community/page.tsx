@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MemberCard } from '@/components/site/member-card';
+import { PostComments } from '@/components/site/post-comments';
 import { questions, members, formatCount, timeAgo } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
@@ -30,6 +31,7 @@ type FeedPost = {
   media_type: 'image' | 'video' | null;
   tag: string | null;
   likes_count: number;
+  user_liked?: boolean;
   comments_count: number;
   shares_count: number;
   created_at: string;
@@ -67,6 +69,7 @@ export default function CommunityPage() {
   const [tab, setTab] = useState('feed');
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [bookmarkedPosts, setBookmarkedPosts] = useState<Set<string>>(new Set());
+  const [bookmarksLoaded, setBookmarksLoaded] = useState(false);
   const [feedPosts, setFeedPosts] = useState<FeedPost[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [postsError, setPostsError] = useState('');
@@ -82,6 +85,33 @@ export default function CommunityPage() {
   const mediaInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem('lyciumlab-bookmarked-posts');
+      const ids: unknown = saved ? JSON.parse(saved) : [];
+      if (Array.isArray(ids) && ids.every((id) => typeof id === 'string')) {
+        setBookmarkedPosts(new Set(ids));
+      }
+    } catch (error) {
+      console.error('Failed to load saved posts:', error);
+    } finally {
+      setBookmarksLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!bookmarksLoaded) return;
+    try {
+      window.localStorage.setItem('lyciumlab-bookmarked-posts', JSON.stringify(Array.from(bookmarkedPosts)));
+    } catch (error) {
+      console.error('Failed to save bookmarked posts:', error);
+    }
+  }, [bookmarkedPosts, bookmarksLoaded]);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('tab') === 'qa') setTab('qa');
+  }, []);
+
+  useEffect(() => {
     const loadPosts = async () => {
       try {
         const response = await fetch('/api/posts?limit=50');
@@ -89,7 +119,9 @@ export default function CommunityPage() {
         if (!response.ok) {
           throw new Error(result.error || 'Impossible de charger les publications.');
         }
-        setFeedPosts(result.posts || []);
+        const posts = result.posts || [];
+        setFeedPosts(posts);
+        setLikedPosts(new Set(posts.filter((post: FeedPost) => post.user_liked).map((post: FeedPost) => post.id)));
         setPostsError('');
       } catch (error) {
         console.error('Failed to load posts:', error);
@@ -127,17 +159,22 @@ export default function CommunityPage() {
 
   const toggleLike = async (postId: string) => {
     try {
-      const res = await fetch(`/api/posts/${postId}/likes`, { method: 'POST' });
-      if (res.ok) {
-        setLikedPosts(prev => {
-          const next = new Set(prev);
-          if (next.has(postId)) next.delete(postId);
-          else next.add(postId);
-          return next;
-        });
-      }
+      if (!user) throw new Error('Connectez-vous pour aimer une publication.');
+      const response = await fetch(`/api/posts/${postId}/likes`, { method: 'POST' });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Impossible de modifier le like.');
+      setLikedPosts((previous) => {
+        const next = new Set(previous);
+        if (result.liked) next.add(postId);
+        else next.delete(postId);
+        return next;
+      });
+      setFeedPosts((previous) => previous.map((post) => (
+        post.id === postId ? { ...post, likes_count: result.likes_count } : post
+      )));
     } catch (e) {
       console.error('Failed to toggle like:', e);
+      setPostError(e instanceof Error ? e.message : 'Impossible de modifier le like.');
     }
   };
 
@@ -148,6 +185,12 @@ export default function CommunityPage() {
       else next.add(postId);
       return next;
     });
+  };
+
+  const incrementPostCommentCount = (postId: string) => {
+    setFeedPosts((previous) => previous.map((post) => (
+      post.id === postId ? { ...post, comments_count: post.comments_count + 1 } : post
+    )));
   };
 
   const submitPost = async (content: string, media: File | null) => {
@@ -346,7 +389,7 @@ export default function CommunityPage() {
             ) : postsError ? (
               <p role="alert" className="text-sm text-destructive">{postsError}</p>
             ) : (
-              <Feed posts={feedPosts} likedPosts={likedPosts} bookmarkedPosts={bookmarkedPosts} onToggleLike={toggleLike} onToggleBookmark={toggleBookmark} />
+              <Feed posts={feedPosts} likedPosts={likedPosts} bookmarkedPosts={bookmarkedPosts} onToggleLike={toggleLike} onToggleBookmark={toggleBookmark} onCommentCreated={incrementPostCommentCount} />
             )
           )}
           {tab === 'qa' && (
@@ -374,7 +417,7 @@ export default function CommunityPage() {
             ) : postsError ? (
               <p role="alert" className="text-sm text-destructive">{postsError}</p>
             ) : (
-              <Feed trendingOnly posts={feedPosts} likedPosts={likedPosts} bookmarkedPosts={bookmarkedPosts} onToggleLike={toggleLike} onToggleBookmark={toggleBookmark} />
+              <Feed trendingOnly posts={feedPosts} likedPosts={likedPosts} bookmarkedPosts={bookmarkedPosts} onToggleLike={toggleLike} onToggleBookmark={toggleBookmark} onCommentCreated={incrementPostCommentCount} />
             )
           )}
         </div>
@@ -448,7 +491,8 @@ function Feed({
   likedPosts,
   bookmarkedPosts,
   onToggleLike,
-  onToggleBookmark
+  onToggleBookmark,
+  onCommentCreated,
 }: {
   trendingOnly?: boolean;
   posts: FeedPost[];
@@ -456,7 +500,11 @@ function Feed({
   bookmarkedPosts: Set<string>;
   onToggleLike: (postId: string) => void;
   onToggleBookmark: (postId: string) => void;
+  onCommentCreated: (postId: string) => void;
 }) {
+  const [openComments, setOpenComments] = useState<Set<string>>(new Set());
+  const [copiedPostId, setCopiedPostId] = useState('');
+  const [shareError, setShareError] = useState('');
   const list = trendingOnly
     ? [...posts].sort((a, b) => b.likes_count - a.likes_count)
     : posts;
@@ -467,7 +515,7 @@ function Feed({
         const isLiked = likedPosts.has(post.id);
         const isBookmarked = bookmarkedPosts.has(post.id);
         return (
-          <Card key={post.id} className="p-5 card-hover">
+          <Card id={`post-${post.id}`} key={post.id} className="p-5 card-hover">
             <div className="flex items-start gap-3">
               <Link href={`/profile/${post.author_id}`}>
                 <Avatar className="h-11 w-11">
@@ -512,11 +560,40 @@ function Feed({
                   >
                     <Heart size={16} className={isLiked ? 'fill-current' : ''} /> {post.likes_count}
                   </button>
-                  <button className="flex items-center gap-1.5 hover:text-primary transition-colors">
+                  <button
+                    type="button"
+                    aria-expanded={openComments.has(post.id)}
+                    onClick={() => setOpenComments((previous) => {
+                      const next = new Set(previous);
+                      if (next.has(post.id)) next.delete(post.id);
+                      else next.add(post.id);
+                      return next;
+                    })}
+                    className="flex items-center gap-1.5 hover:text-primary transition-colors"
+                  >
                     <MessageCircle size={16} /> {post.comments_count}
                   </button>
-                  <button className="flex items-center gap-1.5 hover:text-primary transition-colors">
-                    <Share2 size={16} /> {post.shares_count}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setShareError('');
+                      try {
+                        const url = `${window.location.origin}/community#post-${post.id}`;
+                        if (navigator.share) await navigator.share({ url });
+                        else {
+                          await navigator.clipboard.writeText(url);
+                          setCopiedPostId(post.id);
+                          window.setTimeout(() => setCopiedPostId(''), 2000);
+                        }
+                      } catch (error) {
+                        if (error instanceof Error && error.name === 'AbortError') return;
+                        console.error('Failed to share community post:', error);
+                        setShareError('Impossible de partager cette publication depuis ce navigateur.');
+                      }
+                    }}
+                    className="flex items-center gap-1.5 hover:text-primary transition-colors"
+                  >
+                    <Share2 size={16} /> {copiedPostId === post.id ? 'Lien copié' : 'Partager'}
                   </button>
                   <button
                     onClick={() => onToggleBookmark(post.id)}
@@ -525,6 +602,8 @@ function Feed({
                     <Bookmark size={16} className={bookmarkedPosts.has(post.id) ? 'fill-current' : ''} />
                   </button>
                 </div>
+                {shareError && <p role="alert" className="mt-2 text-sm text-destructive">{shareError}</p>}
+                {openComments.has(post.id) && <PostComments postId={post.id} onCommentCreated={() => onCommentCreated(post.id)} />}
               </div>
             </div>
           </Card>

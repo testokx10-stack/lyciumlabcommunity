@@ -9,22 +9,30 @@ export async function POST(
 ) {
   try {
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError) throw authError
     
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if already liked
-    const { data: existingLike } = await supabase
+    const { data: post, error: postError } = await supabase
+      .from('posts')
+      .select('author_id')
+      .eq('id', params.id)
+      .maybeSingle()
+    if (postError) throw postError
+    if (!post) return NextResponse.json({ error: 'Post not found.' }, { status: 404 })
+
+    const { data: existingLike, error: likeLookupError } = await supabase
       .from('likes')
       .select('id')
       .eq('user_id', user.id)
       .eq('post_id', params.id)
-      .single()
+      .maybeSingle()
+    if (likeLookupError) throw likeLookupError
 
     if (existingLike) {
-      // Unlike
       const { error } = await supabase
         .from('likes')
         .delete()
@@ -33,23 +41,41 @@ export async function POST(
 
       if (error) throw error
 
-      return NextResponse.json({ liked: false })
-    } else {
-      // Like
-      const { error } = await supabase
-        .from('likes')
-        .insert({
-          user_id: user.id,
-          post_id: params.id
-        })
+      const { count, error: countError } = await supabase.from('likes')
+        .select('id', { count: 'exact', head: true })
+        .eq('post_id', params.id)
+      if (countError) throw countError
 
-      if (error) throw error
-
-      return NextResponse.json({ liked: true })
+      return NextResponse.json({ liked: false, likes_count: count || 0 })
     }
+
+    const { error } = await supabase
+      .from('likes')
+      .insert({
+        user_id: user.id,
+        post_id: params.id
+      })
+    if (error) throw error
+
+    if (post.author_id !== user.id) {
+      const { error: notificationError } = await supabase.from('notifications').insert({
+        user_id: post.author_id,
+        type: 'like',
+        reference_id: params.id,
+        actor_id: user.id,
+      })
+      if (notificationError) console.error('Failed to notify post author about like:', notificationError)
+    }
+
+    const { count, error: countError } = await supabase.from('likes')
+      .select('id', { count: 'exact', head: true })
+      .eq('post_id', params.id)
+    if (countError) throw countError
+
+    return NextResponse.json({ liked: true, likes_count: count || 0 })
   } catch (error) {
     console.error('Error toggling like:', error)
-    return NextResponse.json({ error: 'Failed to toggle like' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to toggle like', details: error instanceof Error ? error.message : 'Unexpected database error' }, { status: 500 })
   }
 }
 
@@ -70,12 +96,13 @@ export async function GET(
 
     let userLiked = false
     if (user) {
-      const { data } = await supabase
+      const { data, error: userLikeError } = await supabase
         .from('likes')
         .select('id')
         .eq('post_id', params.id)
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
+      if (userLikeError) throw userLikeError
       userLiked = !!data
     }
 

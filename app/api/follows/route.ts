@@ -6,7 +6,8 @@ export const dynamic = 'force-dynamic'
 export async function POST(request: Request) {
   try {
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError) throw authError
     
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -15,7 +16,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { following_id } = body
 
-    if (!following_id) {
+    if (typeof following_id !== 'string' || !following_id) {
       return NextResponse.json({ error: 'following_id is required' }, { status: 400 })
     }
 
@@ -24,12 +25,13 @@ export async function POST(request: Request) {
     }
 
     // Check if already following
-    const { data: existingFollow } = await supabase
+    const { data: existingFollow, error: followLookupError } = await supabase
       .from('follows')
       .select('id')
       .eq('follower_id', user.id)
       .eq('following_id', following_id)
-      .single()
+      .maybeSingle()
+    if (followLookupError) throw followLookupError
 
     if (existingFollow) {
       // Unfollow
@@ -54,7 +56,7 @@ export async function POST(request: Request) {
       if (error) throw error
 
       // Create notification for followed user
-      await supabase
+      const { error: notificationError } = await supabase
         .from('notifications')
         .insert({
           user_id: following_id,
@@ -62,6 +64,7 @@ export async function POST(request: Request) {
           reference_id: user.id,
           actor_id: user.id
         })
+      if (notificationError) console.error('Failed to notify followed user:', notificationError)
 
       return NextResponse.json({ following: true })
     }

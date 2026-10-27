@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Search, Menu, X, Bell, Plus } from 'lucide-react';
+import { Search, Menu, X, Plus, Bell } from 'lucide-react';
 import { Logo } from './logo';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { NotificationBell } from '@/components/site/notification-bell';
 
 const nav = [
   { label: 'Accueil', href: '/' },
@@ -74,12 +75,7 @@ export function SiteHeader() {
                 <Search size={19} />
               </span>
             </Link>
-            <Button asChild variant="ghost" size="icon" className="hidden sm:inline-flex relative">
-              <span>
-                <Bell size={19} />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-accent ring-2 ring-background" />
-              </span>
-            </Button>
+            <div className="hidden sm:block"><NotificationBell /></div>
             <Button asChild size="sm" className="hidden sm:inline-flex gap-1.5">
               <Link href="/upload">
                 <Plus size={16} /> Téléverser
@@ -138,6 +134,9 @@ export function SiteHeader() {
             );
           })}
           <div className="flex gap-2 mt-2 pt-3 border-t border-border/60">
+            <Button asChild variant="outline" size="sm" className="flex-1 gap-1.5">
+              <Link href={user ? '/notifications' : '/login'}><Bell size={16} /> Notifications</Link>
+            </Button>
             <Button asChild variant="outline" size="sm" className="flex-1 gap-1.5">
               <Link href="/search"><Search size={16} /> Recherche</Link>
             </Button>

@@ -1,5 +1,5 @@
 -- Run once in the Supabase SQL Editor to enable questions, votes, follows,
--- video subscriptions, and comments on the site's built-in videos.
+-- video subscriptions, post likes, notifications, and comments on videos.
 
 ALTER TABLE public.video_subscriptions
   ALTER COLUMN video_id TYPE TEXT USING video_id::text;
@@ -15,6 +15,11 @@ FROM auth.users AS users
 LEFT JOIN public.profiles AS profiles ON profiles.id = users.id
 WHERE profiles.id IS NULL
 ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Users can create notifications as themselves" ON public.notifications;
+CREATE POLICY "Users can create notifications as themselves"
+  ON public.notifications FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = actor_id);
 
 CREATE TABLE IF NOT EXISTS public.video_comments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -212,6 +217,58 @@ DROP TRIGGER IF EXISTS answers_update_question_count ON public.answers;
 CREATE TRIGGER answers_update_question_count
   AFTER INSERT OR DELETE ON public.answers
   FOR EACH ROW EXECUTE FUNCTION public.update_question_answer_count();
+
+UPDATE public.posts AS posts
+SET likes_count = (
+  SELECT COUNT(*) FROM public.likes AS likes
+  WHERE likes.post_id = posts.id
+);
+
+UPDATE public.posts AS posts
+SET comments_count = (
+  SELECT COUNT(*) FROM public.comments AS comments
+  WHERE comments.post_id = posts.id
+);
+
+CREATE OR REPLACE FUNCTION public.update_post_like_count()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  old_post_id UUID;
+  new_post_id UUID;
+BEGIN
+  IF TG_OP <> 'INSERT' THEN
+    old_post_id := OLD.post_id;
+  END IF;
+  IF TG_OP <> 'DELETE' THEN
+    new_post_id := NEW.post_id;
+  END IF;
+
+  IF old_post_id IS NOT NULL AND old_post_id IS DISTINCT FROM new_post_id THEN
+    UPDATE public.posts
+      SET likes_count = (SELECT COUNT(*) FROM public.likes WHERE post_id = old_post_id)
+      WHERE id = old_post_id;
+  END IF;
+  IF new_post_id IS NOT NULL THEN
+    UPDATE public.posts
+      SET likes_count = (SELECT COUNT(*) FROM public.likes WHERE post_id = new_post_id)
+      WHERE id = new_post_id;
+  END IF;
+
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS likes_update_post_count ON public.likes;
+CREATE TRIGGER likes_update_post_count
+  AFTER INSERT OR UPDATE OF post_id OR DELETE ON public.likes
+  FOR EACH ROW EXECUTE FUNCTION public.update_post_like_count();
 
 CREATE OR REPLACE FUNCTION public.update_post_comment_count()
 RETURNS TRIGGER

@@ -38,7 +38,7 @@ export default function SearchPage() {
   return (
     <div className="container-px mx-auto max-w-5xl py-10">
       <h1 className="font-display text-3xl lg:text-4xl font-semibold tracking-tight mb-2">Recherche</h1>
-      <p className="text-muted-foreground mb-6">Recherchez dans les ressources pédagogiques et les vidéos de Lycium Bio Lab.</p>
+      <p className="text-muted-foreground mb-6">Recherchez dans les ressources pédagogiques et les vidéos de Lycium Media Lab.</p>
       <p className="mb-6 text-sm text-muted-foreground">
         Les résultats vidéo affichent des vignettes fournies par YouTube, qui peut recevoir des données techniques lors de leur chargement. <Link href="/privacy" className="underline underline-offset-4">En savoir plus</Link>.
       </p>

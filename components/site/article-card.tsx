@@ -39,7 +39,7 @@ export function ArticleCard({ article, className }: { article: Article; classNam
           <p className="mt-2 text-sm text-muted-foreground line-clamp-2 leading-relaxed">{article.excerpt}</p>
           <div className="mt-auto pt-4 flex items-center justify-between">
             <div className="text-xs text-muted-foreground">
-              <p className="font-medium leading-tight text-foreground">Lycium Bio Lab</p>
+              <p className="font-medium leading-tight text-foreground">Lycium Media Lab</p>
               <p>Contenu éditorial</p>
             </div>
             <span className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums">

@@ -19,7 +19,7 @@ export function Logo({ className, size = 'md' }: { className?: string; size?: 's
         priority
       />
       <span className={cn('font-display font-semibold tracking-tight', dims.text)}>
-        Lycium <span className="text-accent">Bio Lab</span>
+        Lycium <span className="text-accent">Media Lab</span>
       </span>
     </span>
   );

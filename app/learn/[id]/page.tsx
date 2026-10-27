@@ -48,7 +48,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ id: st
       <p className="mt-4 text-lg text-muted-foreground leading-relaxed">{article.excerpt}</p>
 
       <div className="flex items-center justify-between flex-wrap gap-4 mt-6 pb-6 border-b border-border/60">
-        <p className="text-sm text-muted-foreground">Contenu éditorial · Lycium Bio Lab</p>
+        <p className="text-sm text-muted-foreground">Contenu éditorial · Lycium Media Lab</p>
         <span className="flex items-center gap-1 text-sm text-muted-foreground"><Clock size={14} /> {article.readTime}</span>
       </div>
 

@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Lycium Bio Lab',
-    short_name: 'Lycium Bio Lab',
+    name: 'Lycium Media Lab',
+    short_name: 'Lycium Media Lab',
     description: 'Sciences agricoles, communauté et éducation.',
     lang: 'fr',
     start_url: '/',

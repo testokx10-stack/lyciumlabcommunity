@@ -6,7 +6,7 @@ export default function ConductPage() {
       <h1 className="font-display text-3xl font-semibold">Code de conduite</h1>
       <Card className="mt-6 p-5">
         <p className="leading-relaxed text-muted-foreground">
-          Lycium Bio Lab est un espace d’échange autour des sciences agricoles. Ces règles s’appliquent aux publications, commentaires et autres interactions communautaires.
+          Lycium Media Lab est un espace d’échange autour des sciences agricoles. Ces règles s’appliquent aux publications, commentaires et autres interactions communautaires.
         </p>
       </Card>
       <section className="mt-8 space-y-4 leading-relaxed">

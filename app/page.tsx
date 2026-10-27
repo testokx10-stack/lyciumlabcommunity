@@ -87,7 +87,7 @@ export default function Home() {
               Rendre les sciences agricoles accessibles, pratiques et engageantes pour tous.
             </h2>
             <p className="mt-5 text-muted-foreground leading-relaxed">
-              Lycium Bio Lab partage des connaissances en sciences agricoles pour les rendre plus accessibles et utiles à toutes et tous.
+              Lycium Media Lab partage des connaissances en sciences agricoles pour les rendre plus accessibles et utiles à toutes et tous.
             </p>
             <div className="mt-8 space-y-4">
               {[

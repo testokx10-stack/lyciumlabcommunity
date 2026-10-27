@@ -5,11 +5,11 @@ export default function PrivacyPage() {
   return (
     <div className="container-px mx-auto max-w-3xl py-12">
       <h1 className="font-display text-3xl font-semibold">Confidentialité et données personnelles</h1>
-      <p className="mt-3 text-sm text-muted-foreground">Information sur le fonctionnement actuel de Lycium Bio Lab</p>
+      <p className="mt-3 text-sm text-muted-foreground">Information sur le fonctionnement actuel de Lycium Media Lab</p>
       <Card className="mt-6 border-amber-500/40 p-5">
         <p className="font-medium">Informations administratives à confirmer</p>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Lycium Bio Lab est exploité par Al Mahdi Mernissi au Maroc, selon les informations communiquées par le porteur. L’adresse postale, la forme juridique, les durées de conservation, les régions de traitement et les formalités applicables au Maroc restent à confirmer. Cette notice décrit les traitements connus et doit être complétée après vérification; elle ne constitue pas un avis juridique.
+          Lycium Media Lab est exploité par Al Mahdi Mernissi au Maroc, selon les informations communiquées par le porteur. L’adresse postale, la forme juridique, les durées de conservation, les régions de traitement et les formalités applicables au Maroc restent à confirmer. Cette notice décrit les traitements connus et doit être complétée après vérification; elle ne constitue pas un avis juridique.
         </p>
       </Card>
       <section className="mt-8 space-y-4 leading-relaxed">
@@ -32,7 +32,7 @@ export default function PrivacyPage() {
           <a className="text-primary underline" href="https://policies.google.com/privacy?hl=fr" target="_blank" rel="noreferrer">politique de confidentialité de Google</a>.
         </p>
         <p>
-          <strong>Mesure d’audience et prospection :</strong> le site ne propose actuellement ni formulaire de newsletter, ni publicité ciblée, ni outil d’analyse d’audience configuré par Lycium Bio Lab.
+          <strong>Mesure d’audience et prospection :</strong> le site ne propose actuellement ni formulaire de newsletter, ni publicité ciblée, ni outil d’analyse d’audience configuré par Lycium Media Lab.
         </p>
         <h2 className="font-display text-xl font-semibold">Prestataires, transferts et durée</h2>
         <p>

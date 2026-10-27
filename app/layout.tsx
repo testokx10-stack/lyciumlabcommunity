@@ -15,11 +15,11 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   metadataBase: new URL('https://lyciumlabconnect.vercel.app'),
   title: {
-    default: 'Lycium Bio Lab — Cultiver les connaissances. Privilégier l\'innovation.',
-    template: '%s · Lycium Bio Lab',
+    default: 'Lycium Media Lab — Cultiver les connaissances. Privilégier l\'innovation.',
+    template: '%s · Lycium Media Lab',
   },
   description:
-    'Lycium Bio Lab est une plateforme de sciences agricoles et d\'éducation où agriculteurs, ingénieurs, chercheurs et passionnés apprennent, partagent des vidéos et construisent une communauté autour de l\'agriculture durable.',
+    'Lycium Media Lab est une plateforme de sciences agricoles et d\'éducation où agriculteurs, ingénieurs, chercheurs et passionnés apprennent, partagent des vidéos et construisent une communauté autour de l\'agriculture durable.',
   keywords: [
     'sciences agricoles',
     'agriculture durable',
@@ -32,30 +32,30 @@ export const metadata: Metadata = {
     'sciences végétales',
   ],
   openGraph: {
-    title: 'Lycium Bio Lab — Cultiver les connaissances. Privilégier l\'innovation.',
+    title: 'Lycium Media Lab — Cultiver les connaissances. Privilégier l\'innovation.',
     description:
-      'Découvrez les sciences agricoles, partagez votre expertise et cultivons ensemble la communauté de Lycium Bio Lab.',
+      'Découvrez les sciences agricoles, partagez votre expertise et cultivons ensemble la communauté de Lycium Media Lab.',
     type: 'website',
     images: [
       {
-        url: '/opengraph-image.png',
+        url: '/social-image',
         width: 1200,
         height: 630,
-        alt: 'Lycium Bio Lab — Sciences agricoles, communauté et éducation',
+        alt: 'Lycium Media Lab — Sciences agricoles, ressources et éducation',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Lycium Bio Lab — Cultiver les connaissances. Privilégier l\'innovation.',
+    title: 'Lycium Media Lab — Cultiver les connaissances. Privilégier l\'innovation.',
     description:
-      'Découvrez les sciences agricoles, partagez votre expertise et cultivons ensemble la communauté de Lycium Bio Lab.',
-    images: ['/opengraph-image.png'],
+      'Découvrez les sciences agricoles, partagez votre expertise et cultivons ensemble la communauté de Lycium Media Lab.',
+    images: ['/social-image'],
   },
-  applicationName: 'Lycium Bio Lab',
+  applicationName: 'Lycium Media Lab',
   appleWebApp: {
     capable: true,
-    title: 'Lycium Bio Lab',
+    title: 'Lycium Media Lab',
     statusBarStyle: 'default',
   },
   manifest: '/manifest.webmanifest',

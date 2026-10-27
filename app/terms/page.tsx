@@ -13,7 +13,7 @@ export default function TermsPage() {
       <section className="mt-8 space-y-4 leading-relaxed">
         <h2 className="font-display text-xl font-semibold">Utilisation et comptes</h2>
         <p>
-          Lycium Bio Lab met à disposition des ressources éducatives en sciences agricoles et des fonctions de compte et de participation communautaire. Vous devez fournir des informations exactes pour votre compte et protéger vos identifiants. Vous pouvez demander de l’aide concernant votre compte à{' '}
+          Lycium Media Lab met à disposition des ressources éducatives en sciences agricoles et des fonctions de compte et de participation communautaire. Vous devez fournir des informations exactes pour votre compte et protéger vos identifiants. Vous pouvez demander de l’aide concernant votre compte à{' '}
           <a className="text-primary underline" href="mailto:almahdi.mernissi@gmail.com">almahdi.mernissi@gmail.com</a>.
         </p>
         <p>
@@ -24,7 +24,7 @@ export default function TermsPage() {
           Vous êtes responsable des textes et médias que vous publiez. Ne publiez que des contenus que vous avez le droit de partager; respectez les droits d’auteur, la vie privée et les personnes. N’ajoutez pas de données personnelles d’autrui sans autorisation et ne publiez pas de contenu illégal, menaçant, harcelant, trompeur ou destiné au spam.
         </p>
         <p>
-          Les publications communautaires peuvent être visibles par les autres visiteurs selon les fonctionnalités et réglages du site. En publiant, vous autorisez leur affichage sur Lycium Bio Lab pour faire fonctionner le service; vous conservez vos droits sur vos contenus. Contactez l’adresse ci-dessus pour demander de l’aide concernant un contenu ou un compte.
+          Les publications communautaires peuvent être visibles par les autres visiteurs selon les fonctionnalités et réglages du site. En publiant, vous autorisez leur affichage sur Lycium Media Lab pour faire fonctionner le service; vous conservez vos droits sur vos contenus. Contactez l’adresse ci-dessus pour demander de l’aide concernant un contenu ou un compte.
         </p>
         <h2 className="font-display text-xl font-semibold">Respect et modération</h2>
         <p>

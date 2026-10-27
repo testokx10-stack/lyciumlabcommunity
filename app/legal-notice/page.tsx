@@ -13,7 +13,7 @@ export default function LegalNoticePage() {
       <section className="mt-8 space-y-4 leading-relaxed">
         <h2 className="font-display text-xl font-semibold">Éditeur</h2>
         <p>
-          Nom du projet : Lycium Bio Lab. Responsable de publication communiqué : Al Mahdi Mernissi, Maroc. Adresse postale et forme juridique : à confirmer.
+          Nom du projet : Lycium Media Lab. Responsable de publication communiqué : Al Mahdi Mernissi, Maroc. Adresse postale et forme juridique : à confirmer.
         </p>
         <p>
           Contact : <a className="text-primary underline" href="mailto:almahdi.mernissi@gmail.com">almahdi.mernissi@gmail.com</a>.
@@ -24,7 +24,7 @@ export default function LegalNoticePage() {
         </p>
         <h2 className="font-display text-xl font-semibold">Statut</h2>
         <p>
-          Lycium Bio Lab est un projet de partage des connaissances. Les présentes informations signalent les éléments administratifs restant à confirmer et ne remplacent pas des mentions légales complètes.
+          Lycium Media Lab est un projet de partage des connaissances. Les présentes informations signalent les éléments administratifs restant à confirmer et ne remplacent pas des mentions légales complètes.
         </p>
       </section>
     </div>

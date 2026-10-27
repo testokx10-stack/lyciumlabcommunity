@@ -1,10 +1,15 @@
+'use client';
+
 import Link from 'next/link';
-import { Mail, Lock, User, MapPin, ArrowRight, Sprout, Check } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { FormEvent, useState } from 'react';
+import { Mail, Lock, User, MapPin, ArrowRight, Check } from 'lucide-react';
 import { Logo } from '@/components/site/logo';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 const benefits = [
   'Publiez des vidéos, des articles et des questions',
@@ -14,6 +19,45 @@ const benefits = [
 ];
 
 export default function RegisterPage() {
+  const { signUp } = useAuth();
+  const router = useRouter();
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [error, setError] = useState('');
+  const [confirmationSent, setConfirmationSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError('');
+    setConfirmationSent(false);
+    if (!acceptedTerms) {
+      setError('Veuillez accepter les conditions pour créer votre compte.');
+      return;
+    }
+
+    setSubmitting(true);
+    const formData = new FormData(event.currentTarget);
+    const { error: signUpError, needsEmailConfirmation } = await signUp(
+      String(formData.get('email')),
+      String(formData.get('password')),
+      String(formData.get('name')),
+      String(formData.get('location') || '')
+    );
+    setSubmitting(false);
+
+    if (signUpError) {
+      setError(signUpError.message);
+      return;
+    }
+    if (needsEmailConfirmation) {
+      setConfirmationSent(true);
+      return;
+    }
+
+    router.push('/community');
+    router.refresh();
+  };
+
   return (
     <div className="container-px mx-auto max-w-5xl py-12">
       <div className="grid lg:grid-cols-2 gap-12 items-start">
@@ -45,20 +89,20 @@ export default function RegisterPage() {
             <h2 className="font-display text-2xl font-semibold tracking-tight">Créer votre compte</h2>
             <p className="text-sm text-muted-foreground mt-1.5">Cela prend moins d&apos;une minute.</p>
 
-            <form className="space-y-4 mt-6">
+            <form className="space-y-4 mt-6" onSubmit={handleSubmit}>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Nom complet</Label>
                   <div className="relative">
                     <User size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <Input id="name" placeholder="Jean Fermier" className="pl-10 h-11" required />
+                    <Input id="name" name="name" autoComplete="name" placeholder="Jean Fermier" className="pl-10 h-11" required />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="location">Emplacement</Label>
                   <div className="relative">
                     <MapPin size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <Input id="location" placeholder="Ville, Pays" className="pl-10 h-11" />
+                    <Input id="location" name="location" autoComplete="address-level2" placeholder="Ville, Pays" className="pl-10 h-11" />
                   </div>
                 </div>
               </div>
@@ -66,34 +110,30 @@ export default function RegisterPage() {
                 <Label htmlFor="email">E-mail</Label>
                 <div className="relative">
                   <Mail size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input id="email" type="email" placeholder="vous@ferme.com" className="pl-10 h-11" required />
+                  <Input id="email" name="email" type="email" autoComplete="email" placeholder="vous@ferme.com" className="pl-10 h-11" required />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Mot de passe</Label>
                 <div className="relative">
                   <Lock size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input id="password" type="password" placeholder="Au moins 8 caractères" className="pl-10 h-11" required />
+                  <Input id="password" name="password" type="password" autoComplete="new-password" minLength={8} placeholder="Au moins 8 caractères" className="pl-10 h-11" required />
                 </div>
                 <p className="text-xs text-muted-foreground">Utilisez un mélange de lettres, de chiffres et de symboles.</p>
               </div>
               <div className="flex items-start gap-2">
-                <Checkbox id="terms" className="mt-0.5" />
+                <Checkbox id="terms" className="mt-0.5" checked={acceptedTerms} onCheckedChange={(checked) => setAcceptedTerms(checked === true)} />
                 <Label htmlFor="terms" className="text-sm text-muted-foreground font-normal cursor-pointer leading-relaxed">
-                  J&apos;accepte les <Link href="#" className="text-primary hover:underline">Conditions d'utilisation</Link> et le <Link href="#" className="text-primary hover:underline">Code de conduite</Link>.
+                  J&apos;accepte les <Link href="#" className="text-primary hover:underline">Conditions d&apos;utilisation</Link> et le <Link href="#" className="text-primary hover:underline">Code de conduite</Link>.
                 </Label>
               </div>
-              <Button type="submit" size="lg" className="w-full gap-1.5">Créer le compte <ArrowRight size={17} /></Button>
+              {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+              {confirmationSent && <p role="status" className="text-sm text-primary">Vérifiez votre e-mail pour confirmer votre compte.</p>}
+              <Button type="submit" size="lg" className="w-full gap-1.5" disabled={submitting}>
+                {submitting ? 'Création du compte...' : 'Créer le compte'} <ArrowRight size={17} />
+              </Button>
             </form>
 
-            <div className="relative my-5">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/60" /></div>
-              <div className="relative flex justify-center"><span className="bg-card px-3 text-xs text-muted-foreground">ou</span></div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Button variant="outline" className="gap-2"><Sprout size={16} /> ORCID</Button>
-              <Button variant="outline" className="gap-2">Google</Button>
-            </div>
           </div>
 
           <p className="text-center text-sm text-muted-foreground mt-5">

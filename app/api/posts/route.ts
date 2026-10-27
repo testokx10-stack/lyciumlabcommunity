@@ -17,9 +17,8 @@ export async function GET(request: Request) {
       .from('posts')
       .select(`
         *,
-        author:profiles!author_id(id, username, full_name, avatar_url, role),
-        liked_by_user:likes!user_id(user_id)
-      `)
+        author:profiles!posts_author_id_fkey(id, username, full_name, avatar_url, role)
+      `, { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -38,7 +37,7 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error('Error fetching posts:', error)
-    return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to fetch posts', details: error instanceof Error ? error.message : JSON.stringify(error) }, { status: 500 })
   }
 }
 
@@ -68,7 +67,7 @@ export async function POST(request: Request) {
       })
       .select(`
         *,
-        author:profiles!author_id(id, username, full_name, avatar_url, role)
+        author:profiles!posts_author_id_fkey(id, username, full_name, avatar_url, role)
       `)
       .single()
 

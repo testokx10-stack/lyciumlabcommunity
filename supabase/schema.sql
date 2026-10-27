@@ -202,7 +202,7 @@ BEGIN
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$ language 'plpgsql'; -- cspell:ignore plpgsql
 
 -- Triggers for updated_at
 CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -215,8 +215,14 @@ CREATE TRIGGER update_answers_updated_at BEFORE UPDATE ON answers FOR EACH ROW E
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, full_name, avatar_url, role)
-  VALUES (NEW.id, NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'avatar_url', 'member');
+  INSERT INTO public.profiles (id, full_name, avatar_url, location, role)
+  VALUES (
+    NEW.id,
+    NEW.raw_user_meta_data->>'full_name',
+    NEW.raw_user_meta_data->>'avatar_url',
+    NEW.raw_user_meta_data->>'location',
+    'member'
+  );
   RETURN NEW;
 END;
 $$ language 'plpgsql' security definer;

@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Search, Menu, X, Bell, Plus, ChevronDown } from 'lucide-react';
+import { Search, Menu, X, Bell, Plus } from 'lucide-react';
 import { Logo } from './logo';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/components/auth/AuthProvider';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -17,6 +18,7 @@ const nav = [
 ];
 
 export function SiteHeader() {
+  const { user, loading: authLoading, signOut } = useAuth();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -83,15 +85,22 @@ export function SiteHeader() {
                 <Plus size={16} /> Téléverser
               </Link>
             </Button>
-            <div className="hidden sm:block">
-              <Link href="/profile/u3" className="flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-full hover:bg-secondary transition-colors">
-                <Avatar className="h-8 w-8 border border-border">
-                  <AvatarImage src="https://images.pexels.com/photos/30909798/pexels-photo-30909798.jpeg?auto=compress&cs=tinysrgb&h=80&w=80" alt="Profil" />
-                  <AvatarFallback>YT</AvatarFallback>
-                </Avatar>
-                <ChevronDown size={14} className="text-muted-foreground" />
-              </Link>
-            </div>
+            {!authLoading && (
+              user ? (
+                <div className="hidden sm:flex items-center gap-2">
+                  <Avatar className="h-8 w-8 border border-border">
+                    <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name || 'Profil'} />
+                    <AvatarFallback>{(user.user_metadata.full_name || user.email || 'U').slice(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <Button variant="ghost" size="sm" onClick={() => void signOut()}>Déconnexion</Button>
+                </div>
+              ) : (
+                <div className="hidden sm:flex items-center gap-1">
+                  <Button asChild variant="ghost" size="sm"><Link href="/login">Connexion</Link></Button>
+                  <Button asChild size="sm"><Link href="/register">Créer un compte</Link></Button>
+                </div>
+              )
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -136,6 +145,18 @@ export function SiteHeader() {
               <Link href="/upload"><Plus size={16} /> Téléverser</Link>
             </Button>
           </div>
+          {!authLoading && (
+            <div className="flex gap-2 mt-2">
+              {user ? (
+                <Button variant="outline" size="sm" className="w-full" onClick={() => void signOut()}>Déconnexion</Button>
+              ) : (
+                <>
+                  <Button asChild variant="outline" size="sm" className="flex-1"><Link href="/login">Connexion</Link></Button>
+                  <Button asChild size="sm" className="flex-1"><Link href="/register">Créer un compte</Link></Button>
+                </>
+              )}
+            </div>
+          )}
         </nav>
       </div>
     </header>

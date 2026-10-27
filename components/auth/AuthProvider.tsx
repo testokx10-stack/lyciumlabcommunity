@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { User, Session } from '@supabase/supabase-js'
 
@@ -9,34 +9,38 @@ interface AuthContextType {
   session: Session | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>
+  signUp: (email: string, password: string, fullName: string, location?: string) => Promise<{ error: Error | null; needsEmailConfirmation: boolean }>
   signOut: () => Promise<void>
   refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const hasSupabaseConfig = typeof process !== 'undefined' && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const hasSupabaseConfig = Boolean(
+  supabaseUrl &&
+  supabaseAnonKey &&
+  supabaseUrl !== 'https://placeholder.supabase.co' &&
+  supabaseAnonKey !== 'placeholder-key'
+)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const [mounted, setMounted] = useState(false)
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
-  )
+  const supabase = useMemo(() => createBrowserClient(
+    supabaseUrl || 'https://placeholder.supabase.co',
+    supabaseAnonKey || 'placeholder-key'
+  ), [])
 
   useEffect(() => {
     if (!hasSupabaseConfig) {
       setLoading(false)
-      setMounted(true)
       return
     }
 
-    setMounted(true)
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -60,16 +64,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error }
   }
 
-  const signUp = async (email: string, password: string, fullName: string) => {
-    if (!hasSupabaseConfig) return { error: new Error('Supabase not configured') }
-    const { error } = await supabase.auth.signUp({
+  const signUp = async (email: string, password: string, fullName: string, location?: string) => {
+    if (!hasSupabaseConfig) return { error: new Error('Supabase is not configured'), needsEmailConfirmation: false }
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: fullName }
+        emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/community`,
+        data: { full_name: fullName, location }
       }
     })
-    return { error }
+    return { error, needsEmailConfirmation: !data.session }
   }
 
   const signOut = async () => {
@@ -85,10 +90,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(user)
   }
 
-  if (!mounted) {
-    return <>{children}</>
-  }
-
   return (
     <AuthContext.Provider value={{
       user,
@@ -102,4 +103,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   )
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
 }

@@ -68,7 +68,7 @@ export default function RegisterPage() {
             Rejoignez 12 400 agriculteurs, chercheurs et passionnés.
           </h1>
           <p className="text-muted-foreground mt-4 leading-relaxed text-lg">
-            Gratuit pour toujours. Votre compte débloque toute la communauté Lycium Lab, la bibliothèque vidéo et le hub de connaissances.
+            Gratuit pour toujours. Votre compte débloque toute la communauté Lycium Bio Lab, la bibliothèque vidéo et le hub de connaissances.
           </p>
           <ul className="mt-8 space-y-3">
             {benefits.map((b) => (

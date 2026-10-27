@@ -70,7 +70,7 @@ export default function LoginPage() {
       </div>
 
       <p className="text-center text-sm text-muted-foreground mt-6">
-        Nouveau sur Lycium Lab ? <Link href="/register" className="text-primary font-medium hover:underline">Créer un compte</Link>
+        Nouveau sur Lycium Bio Lab ? <Link href="/register" className="text-primary font-medium hover:underline">Créer un compte</Link>
       </p>
     </div>
   );

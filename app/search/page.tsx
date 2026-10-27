@@ -35,7 +35,7 @@ export default function SearchPage() {
   return (
     <div className="container-px mx-auto max-w-5xl py-10">
       <h1 className="font-display text-3xl lg:text-4xl font-semibold tracking-tight mb-2">Recherche</h1>
-      <p className="text-muted-foreground mb-6">Trouvez des vidéos, des articles, des membres et des discussions à travers Lycium Lab.</p>
+      <p className="text-muted-foreground mb-6">Trouvez des vidéos, des articles, des membres et des discussions à travers Lycium Bio Lab.</p>
 
       <div className="relative mb-6">
         <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />

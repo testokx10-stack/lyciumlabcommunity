@@ -13,13 +13,13 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://lyciumlab.org'),
+  metadataBase: new URL('https://lyciumlabconnect.vercel.app'),
   title: {
-    default: 'Lycium Lab — Cultiver les connaissances. Privilégier l\'innovation.',
-    template: '%s · Lycium Lab',
+    default: 'Lycium Bio Lab — Cultiver les connaissances. Privilégier l\'innovation.',
+    template: '%s · Lycium Bio Lab',
   },
   description:
-    'Lycium Lab est une plateforme de sciences agricoles et d\'éducation où agriculteurs, ingénieurs, chercheurs et passionnés apprennent, partagent des vidéos et construisent une communauté autour de l\'agriculture durable.',
+    'Lycium Bio Lab est une plateforme de sciences agricoles et d\'éducation où agriculteurs, ingénieurs, chercheurs et passionnés apprennent, partagent des vidéos et construisent une communauté autour de l\'agriculture durable.',
   keywords: [
     'sciences agricoles',
     'agriculture durable',
@@ -32,17 +32,33 @@ export const metadata: Metadata = {
     'sciences végétales',
   ],
   openGraph: {
-    title: 'Lycium Lab — Cultiver les connaissances. Privilégier l\'innovation.',
+    title: 'Lycium Bio Lab — Cultiver les connaissances. Privilégier l\'innovation.',
     description:
-      'Découvrez les sciences agricoles, partagez votre expertise et cultivons ensemble la communauté de Lycium Lab.',
+      'Découvrez les sciences agricoles, partagez votre expertise et cultivons ensemble la communauté de Lycium Bio Lab.',
     type: 'website',
+    images: [
+      {
+        url: '/opengraph-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Lycium Bio Lab — Sciences agricoles, communauté et éducation',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Lycium Lab — Cultiver les connaissances. Privilégier l\'innovation.',
+    title: 'Lycium Bio Lab — Cultiver les connaissances. Privilégier l\'innovation.',
     description:
-      'Découvrez les sciences agricoles, partagez votre expertise et cultivons ensemble la communauté de Lycium Lab.',
+      'Découvrez les sciences agricoles, partagez votre expertise et cultivons ensemble la communauté de Lycium Bio Lab.',
+    images: ['/opengraph-image.png'],
   },
+  applicationName: 'Lycium Bio Lab',
+  appleWebApp: {
+    capable: true,
+    title: 'Lycium Bio Lab',
+    statusBarStyle: 'default',
+  },
+  manifest: '/manifest.webmanifest',
 };
 
 export default function RootLayout({

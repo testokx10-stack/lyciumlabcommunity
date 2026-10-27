@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Logo } from './logo';
+import Image from 'next/image';
 import { Youtube, Twitter, Linkedin, Instagram, Mail, MapPin, ArrowRight } from 'lucide-react';
 
 const footerNav = [
@@ -54,7 +54,13 @@ export function SiteFooter() {
       <div className="container-px mx-auto max-w-7xl py-14">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
           <div className="space-y-4">
-            <Logo />
+            <Image
+              src="/lycium-bio-lab-logo.png"
+              alt="Lycium Bio Lab — Innovative Agriculture. Sustainable Tomorrow."
+              width={180}
+              height={180}
+              className="h-36 w-36 rounded-xl object-contain"
+            />
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               Une plateforme de sciences agricoles et d&apos;éducation où agriculteurs, chercheurs et passionnés apprennent, partagent et cultivent ensemble.
             </p>
@@ -98,7 +104,7 @@ export function SiteFooter() {
 
         <div className="mt-12 pt-6 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Lycium Lab. Cultivons des connaissances pour un avenir durable.
+            © {new Date().getFullYear()} Lycium Bio Lab. Cultivons des connaissances pour un avenir durable.
           </p>
           <div className="flex gap-5 text-xs text-muted-foreground">
             <Link href="#" className="hover:text-primary transition-colors">Confidentialité</Link>

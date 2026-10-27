@@ -46,7 +46,7 @@ export default async function Home() {
                 Cultiver les connaissances. <span className="gradient-text">Privilégier l&apos;innovation.</span>
               </h1>
               <p className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-xl text-balance">
-                Découvrez les sciences agricoles, partagez votre expertise et cultivons ensemble la communauté de Lycium Lab.
+                Découvrez les sciences agricoles, partagez votre expertise et cultivons ensemble la communauté de Lycium Bio Lab.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Button asChild size="lg" className="gap-2 text-base h-12 px-6">
@@ -157,7 +157,7 @@ export default async function Home() {
               Rendre les sciences agricoles accessibles, pratiques et engageantes pour tous.
             </h2>
             <p className="mt-5 text-muted-foreground leading-relaxed">
-              Lycium Lab comble le fossé entre la recherche et le terrain. Nous réunissons agriculteurs, agronomes, chercheurs et étudiants pour partager des connaissances fondées sur des preuves — des microbiomes du sol aux drones de précision — sous une forme réellement utile.
+              Lycium Bio Lab comble le fossé entre la recherche et le terrain. Nous réunissons agriculteurs, agronomes, chercheurs et étudiants pour partager des connaissances fondées sur des preuves — des microbiomes du sol aux drones de précision — sous une forme réellement utile.
             </p>
             <div className="mt-8 space-y-4">
               {[

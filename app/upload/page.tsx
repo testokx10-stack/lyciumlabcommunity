@@ -99,7 +99,7 @@ export default function UploadPage() {
         </div>
         <h1 className="font-display text-3xl font-semibold tracking-tight">Share a video</h1>
         <p className="mt-2 text-muted-foreground">
-          Upload a video from your device or share a link with the Lycium Lab community.
+          Upload a video from your device or share a link with the Lycium Bio Lab community.
         </p>
       </div>
 

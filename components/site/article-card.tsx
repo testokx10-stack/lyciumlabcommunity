@@ -12,6 +12,7 @@ const typeLabel: Record<Article['type'], string> = {
   'case-study': 'Étude de cas',
   tutorial: 'Tutoriel',
   article: 'Article',
+  reference: 'Référence',
 };
 
 export function ArticleCard({ article, className }: { article: Article; className?: string }) {

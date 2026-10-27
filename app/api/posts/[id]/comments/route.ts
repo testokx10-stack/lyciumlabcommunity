@@ -78,9 +78,6 @@ export async function POST(
 
     if (error) throw error
 
-    // Increment comments count on post
-    await supabase.rpc('increment_comments_count', { post_id: params.id })
-
     return NextResponse.json({ comment: data }, { status: 201 })
   } catch (error) {
     console.error('Error creating comment:', error)

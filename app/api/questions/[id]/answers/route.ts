@@ -18,9 +18,8 @@ export async function GET(
       .from('answers')
       .select(`
         *,
-        author:profiles!author_id(id, username, full_name, avatar_url, role),
-        votes:likes!answer_id(count)
-      `)
+        author:profiles!answers_author_id_fkey(id, username, full_name, avatar_url, role)
+      `, { count: 'exact' })
       .eq('question_id', params.id)
       .order('accepted', { ascending: false })
       .order('created_at', { ascending: true })
@@ -28,15 +27,35 @@ export async function GET(
 
     if (error) throw error
 
-    return NextResponse.json({ 
-      answers: data || [], 
+    const answerIds = (data || []).map((answer) => answer.id)
+    const { data: votes, error: votesError } = answerIds.length
+      ? await supabase.from('answer_votes').select('answer_id, user_id, vote').in('answer_id', answerIds)
+      : { data: [], error: null }
+    if (votesError) throw votesError
+
+    const { data: { user } } = await supabase.auth.getUser()
+    const answers = (data || []).map((answer) => {
+      const answerVotes = (votes || []).filter((vote) => vote.answer_id === answer.id)
+      return {
+        ...answer,
+        votes_count: answerVotes.reduce((total, vote) => total + (vote.vote === 'up' ? 1 : -1), 0),
+        user_vote: answerVotes.find((vote) => vote.user_id === user?.id)?.vote || null,
+      }
+    })
+
+    return NextResponse.json({
+      answers,
       total: count || 0,
       page,
       limit
     })
   } catch (error) {
     console.error('Error fetching answers:', error)
-    return NextResponse.json({ error: 'Failed to fetch answers' }, { status: 500 })
+    const details = error instanceof Error ? error.message : 'Unexpected database error'
+    if (details.includes('answer_votes')) {
+      return NextResponse.json({ error: 'Run supabase/community-interactions.sql in Supabase to enable answer voting.' }, { status: 500 })
+    }
+    return NextResponse.json({ error: 'Failed to fetch answers', details }, { status: 500 })
   }
 }
 
@@ -46,7 +65,8 @@ export async function POST(
 ) {
   try {
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError) throw authError
     
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -55,8 +75,11 @@ export async function POST(
     const body = await request.json()
     const { body: answerBody } = body
 
-    if (!answerBody?.trim()) {
+    if (typeof answerBody !== 'string' || !answerBody.trim()) {
       return NextResponse.json({ error: 'Answer body is required' }, { status: 400 })
+    }
+    if (answerBody.length > 10000) {
+      return NextResponse.json({ error: 'Answers must be 10,000 characters or fewer.' }, { status: 400 })
     }
 
     const { data, error } = await supabase
@@ -68,18 +91,15 @@ export async function POST(
       })
       .select(`
         *,
-        author:profiles!author_id(id, username, full_name, avatar_url, role)
+        author:profiles!answers_author_id_fkey(id, username, full_name, avatar_url, role)
       `)
       .single()
 
     if (error) throw error
 
-    // Increment answers count on question
-    await supabase.rpc('increment_answers_count', { question_id: params.id })
-
     return NextResponse.json({ answer: data }, { status: 201 })
   } catch (error) {
     console.error('Error creating answer:', error)
-    return NextResponse.json({ error: 'Failed to create answer' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to create answer', details: error instanceof Error ? error.message : 'Unexpected database error' }, { status: 500 })
   }
 }

@@ -7,12 +7,13 @@ import { Input } from '@/components/ui/input';
 import { VideoCard } from '@/components/site/video-card';
 import { ArticleCard } from '@/components/site/article-card';
 import { MemberCard } from '@/components/site/member-card';
-import { categories, videos, articles, members, formatCount } from '@/lib/data';
+import { categories, videos, members, formatCount } from '@/lib/data';
+import { learningResources } from '@/lib/learning-resources';
 
 export default function Home() {
   const featured = videos.filter((v) => v.featured);
   const trending = videos.filter((v) => v.trending).slice(0, 4);
-  const latestArticles = articles.slice(0, 3);
+  const latestArticles = learningResources.slice(0, 3);
   const experts = members.filter((m) => m.role === 'expert' || m.role === 'moderator').slice(0, 3);
 
   return (
@@ -31,7 +32,7 @@ export default function Home() {
                 <Sparkles size={13} /> Sciences agricoles · Communauté · Éducation
               </Badge>
               <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold leading-[1.08] tracking-tight text-balance">
-                Cultiver les connaissances. <span className="gradient-text">Privilégier l'innovation.</span>
+                Cultiver les connaissances. <span className="gradient-text">Privilégier l&apos;innovation.</span>
               </h1>
               <p className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-xl text-balance">
                 Découvrez les sciences agricoles, partagez votre expertise et cultivons ensemble la communauté de Lycium Lab.
@@ -246,7 +247,7 @@ export default function Home() {
                     className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus-visible:ring-white/40"
                   />
                   <Button size="lg" variant="secondary" className="h-12 gap-1.5 shrink-0">
-                    S'abonner <ArrowRight size={17} />
+                    S&apos;abonner <ArrowRight size={17} />
                   </Button>
                 </div>
                 <p className="flex items-center gap-1.5 text-xs text-white/70">

@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { FollowButton } from '@/components/site/follow-button';
 import { getMember, members, timeAgo } from '@/lib/data';
 import { createClient } from '@/lib/supabase/server';
 
@@ -102,6 +103,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
               </p>
             )}
             {profile.bio && <p className="mt-4 leading-relaxed">{profile.bio}</p>}
+            {!demoMember && <FollowButton profileId={profile.id} />}
             <Button asChild className="mt-5 gap-2">
               <Link href="/community"><MessageCircle size={16} /> Visit the community</Link>
             </Button>

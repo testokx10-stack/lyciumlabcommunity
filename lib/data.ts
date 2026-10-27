@@ -33,7 +33,7 @@ export type Article = {
   readTime: string;
   publishedAt: string;
   authorId: string;
-  type: 'guide' | 'research' | 'case-study' | 'tutorial' | 'article';
+  type: 'guide' | 'research' | 'case-study' | 'tutorial' | 'article' | 'reference';
   evidenceBased: boolean;
 };
 

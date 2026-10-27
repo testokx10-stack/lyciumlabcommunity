@@ -1,17 +1,17 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Clock, Calendar, BadgeCheck, ArrowLeft, Bookmark, Share2, ThumbsUp, MessageCircle, FileDown, ChevronRight, BookOpen } from 'lucide-react';
+import { Clock, Calendar, BadgeCheck, ArrowLeft, Bookmark, Share2, ThumbsUp, MessageCircle, ChevronRight, BookOpen } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { ArticleCard } from '@/components/site/article-card';
-import { articles, getMember, getCategory, formatDate } from '@/lib/data';
-import { cn } from '@/lib/utils';
+import { getMember, getCategory, formatDate } from '@/lib/data';
+import { learningResources, learningResourceSections } from '@/lib/learning-resources';
 
 export function generateStaticParams() {
-  return articles.map((a) => ({ id: a.id }));
+  return learningResources.map((article) => ({ id: article.id }));
 }
 
 const typeLabel: Record<string, string> = {
@@ -20,15 +20,17 @@ const typeLabel: Record<string, string> = {
   'case-study': 'Étude de cas',
   tutorial: 'Tutoriel',
   article: 'Article',
+  reference: 'Référence pratique',
 };
 
 export default function ArticlePage({ params }: { params: { id: string } }) {
-  const article = articles.find((a) => a.id === params.id);
+  const article = learningResources.find((a) => a.id === params.id);
   if (!article) notFound();
 
   const author = getMember(article.authorId)!;
   const category = getCategory(article.category);
-  const related = articles.filter((a) => a.id !== article.id && a.category === article.category).slice(0, 3);
+  const related = learningResources.filter((a) => a.id !== article.id && a.category === article.category).slice(0, 3);
+  const sections = learningResourceSections[article.id] || [];
 
   return (
     <div className="container-px mx-auto max-w-3xl py-8">
@@ -40,10 +42,12 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
 
       <div className="flex items-center gap-2 mb-4">
         <Badge variant="secondary">{typeLabel[article.type]}</Badge>
-        {article.evidenceBased && (
+        {article.evidenceBased ? (
           <Badge variant="outline" className="gap-1 border-accent/30 text-accent">
             <BadgeCheck size={12} /> Basé sur des preuves
           </Badge>
+        ) : (
+          <Badge variant="outline">Ressource pédagogique</Badge>
         )}
       </div>
 
@@ -75,53 +79,23 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
         <img src={article.cover} alt={article.title} className="h-full w-full object-cover" />
       </div>
 
-      {/* Article body */}
       <article className="prose prose-neutral max-w-none">
-        <p className="text-base leading-relaxed">
-          {article.excerpt} Cette {typeLabel[article.type].toLowerCase()} parcourt les concepts clés, les preuves soutenues et les étapes pratiques que vous pouvez appliquer sur le terrain dès aujourd'hui.
-        </p>
-
-        <h2 className="font-display text-xl font-semibold mt-8 mb-3">Contexte</h2>
-        <p className="text-base leading-relaxed text-muted-foreground">
-          Pendant des décennies, la vision conventionnelle considérait le sol comme un substrat passif — un milieu physique transportant l'eau et les nutriments dissous vers les racines. Nous savons aujourd'hui que le sol sain est un écosystème vivant, et les interactions entre les racines des plantes et les organismes du sol sont au cœur de la fertilité, de la résistance à la sécheresse et de la lutte contre les maladies.
-        </p>
-
-        <h2 className="font-display text-xl font-semibold mt-8 mb-3">Ce que montre la recherche</h2>
-        <p className="text-base leading-relaxed text-muted-foreground">
-          Des méta-analyses d'essais à long terme montrent consistentement que les pratiques qui nourrissent la faune du sol — cultures couvrantes, réduction du travail du sol et amendements organiques — améliorent la stabilité des agrégats, la capacité de rétention d'eau et l'efficacité d'utilisation des nutriments en trois à cinq saisons. L'effet est le plus fort sur les sols dégradés et plus faible sur les sols déjà riches en matière organique.
-        </p>
-
+        {sections.map((section) => (
+          <section key={section.heading}>
+            <h2 className="font-display text-xl font-semibold mt-8 mb-3">{section.heading}</h2>
+            <p className="text-base leading-relaxed text-muted-foreground">{section.body}</p>
+            {section.points && (
+              <ul className="list-disc pl-5 mt-3 space-y-2 text-base leading-relaxed text-muted-foreground">
+                {section.points.map((point) => <li key={point}>{point}</li>)}
+              </ul>
+            )}
+          </section>
+        ))}
         <Card className="p-4 my-6 bg-accent/5 border-accent/20">
           <p className="text-sm leading-relaxed">
-            <strong className="text-accent">Point clé :</strong> Les parcelles sous cultures couvrantes continues ont accumulé en moyenne 0,3 % de carbone organique du sol en cinq ans par rapport aux témoins à repos — un changement significatif dans le contexte des systèmes de culture annuelle.
+            <strong className="text-accent">À retenir :</strong> Cette fiche pédagogique donne des repères généraux. Adaptez les pratiques au sol, au climat, à la culture et à la réglementation locale ; demandez conseil à un professionnel en cas de doute.
           </p>
         </Card>
-
-        <h2 className="font-display text-xl font-semibold mt-8 mb-3">Étapes pratiques</h2>
-        <ol className="list-decimal pl-5 space-y-2 text-base leading-relaxed text-muted-foreground">
-          <li>Sélectionnez un mélange de culture couvrante adapté à votre fenêtre climatique et à votre rotation principale.</li>
-          <li>Minimisez les efforts — passez au labour sur bande ou au travail du sol zéro là que le système le permet.</li>
-          <li>Appliquez du compost ou du fumier en fonction d'un test de sol récent, pas selon un horaire générique.</li>
-          <li>Suivez avec des tests annuels de matière organique du sol et mesurez le taux d'infiltration comme indicateur à faible coût.</li>
-        </ol>
-
-        <h2 className="font-display text-xl font-semibold mt-8 mb-3">Références</h2>
-        <ul className="list-disc pl-5 space-y-1.5 text-sm text-muted-foreground">
-          <li>Lal, R. (2020). Matière organique du sol et rétention d'eau. <em>Journal of Soil and Water Conservation</em>.</li>
-          <li>FAO (2023). Gestion du microbiome du sol en agriculture de production. Rapport technique.</li>
-          <li>Jeu de données d'essai sur le terrain — répertoire communautaire Lycium Lab (accès ouvert).</li>
-        </ul>
-
-        {article.type === 'tutorial' && (
-          <Card className="p-5 my-6 flex items-center gap-3">
-            <FileDown size={20} className="text-accent shrink-0" />
-            <div>
-              <p className="text-sm font-medium">Télécharger la feuille de calcul</p>
-              <p className="text-xs text-muted-foreground">Une liste de contrôle PDF imprimable pour ce tutoriel.</p>
-            </div>
-            <Button size="sm" variant="outline" className="ml-auto gap-1.5"><FileDown size={14} /> PDF</Button>
-          </Card>
-        )}
       </article>
 
       {/* Actions */}

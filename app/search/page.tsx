@@ -8,7 +8,8 @@ import { Card } from '@/components/ui/card';
 import { VideoCardCompact } from '@/components/site/video-card';
 import { ArticleListItem } from '@/components/site/article-card';
 import { MemberAvatarRow } from '@/components/site/member-card';
-import { videos, articles, members, questions, formatCount } from '@/lib/data';
+import { videos, members, questions, formatCount } from '@/lib/data';
+import { learningResources } from '@/lib/learning-resources';
 import { cn } from '@/lib/utils';
 
 const types = ['Tout', 'Vidéos', 'Articles', 'Membres', 'Questions'];
@@ -23,7 +24,7 @@ export default function SearchPage() {
     const q = query.toLowerCase();
     return {
       videos: videos.filter((v) => v.title.toLowerCase().includes(q) || v.tags.some((t) => t.includes(q))),
-      articles: articles.filter((a) => a.title.toLowerCase().includes(q) || a.excerpt.toLowerCase().includes(q)),
+      articles: learningResources.filter((a) => a.title.toLowerCase().includes(q) || a.excerpt.toLowerCase().includes(q)),
       members: members.filter((m) => m.name.toLowerCase().includes(q) || m.title.toLowerCase().includes(q) || m.bio.toLowerCase().includes(q)),
       questions: questions.filter((qu) => qu.title.toLowerCase().includes(q) || qu.body.toLowerCase().includes(q)),
     };

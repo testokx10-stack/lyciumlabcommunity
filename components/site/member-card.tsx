@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import { BadgeCheck, MapPin, Users } from 'lucide-react';
+import { BadgeCheck, MapPin } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import { FollowButton } from '@/components/site/follow-button';
 import { Member, formatCount } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
@@ -39,9 +39,7 @@ export function MemberCard({ member, className }: { member: Member; className?: 
         <span><b className="text-foreground">{formatCount(member.followers)}</b> abonnés</span>
         <span><b className="text-foreground">{member.contributions}</b> publications</span>
       </div>
-      <Button size="sm" variant="outline" className="mt-4 w-full">
-        <Users size={14} className="mr-1.5" /> Suivre
-      </Button>
+      <FollowButton profileId={member.id} />
     </Card>
   );
 }

@@ -15,13 +15,13 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if already subscribed
-    const { data: existingSub } = await supabase
+    const { data: existingSub, error: subscriptionError } = await supabase
       .from('video_subscriptions')
       .select('id')
       .eq('user_id', user.id)
       .eq('video_id', params.id)
-      .single()
+      .maybeSingle()
+    if (subscriptionError) throw subscriptionError
 
     if (existingSub) {
       // Unsubscribe
@@ -49,7 +49,11 @@ export async function POST(
     }
   } catch (error) {
     console.error('Error toggling subscription:', error)
-    return NextResponse.json({ error: 'Failed to toggle subscription' }, { status: 500 })
+    const details = error instanceof Error ? error.message : 'Unexpected database error'
+    if (details.includes('video_subscriptions') || details.includes('invalid input syntax for type uuid')) {
+      return NextResponse.json({ error: 'Run supabase/community-interactions.sql in Supabase to enable video subscriptions.' }, { status: 500 })
+    }
+    return NextResponse.json({ error: 'Failed to toggle subscription', details }, { status: 500 })
   }
 }
 
@@ -63,18 +67,23 @@ export async function GET(
 
     let subscribed = false
     if (user) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('video_subscriptions')
         .select('id')
         .eq('user_id', user.id)
         .eq('video_id', params.id)
-        .single()
+        .maybeSingle()
+      if (error) throw error
       subscribed = !!data
     }
 
     return NextResponse.json({ subscribed })
   } catch (error) {
     console.error('Error fetching subscription:', error)
-    return NextResponse.json({ error: 'Failed to fetch subscription' }, { status: 500 })
+    const details = error instanceof Error ? error.message : 'Unexpected database error'
+    if (details.includes('video_subscriptions') || details.includes('invalid input syntax for type uuid')) {
+      return NextResponse.json({ error: 'Run supabase/community-interactions.sql in Supabase to enable video subscriptions.' }, { status: 500 })
+    }
+    return NextResponse.json({ error: 'Failed to fetch subscription', details }, { status: 500 })
   }
 }

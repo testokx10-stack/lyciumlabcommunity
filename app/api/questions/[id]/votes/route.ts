@@ -9,46 +9,54 @@ export async function POST(
 ) {
   try {
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError) throw authError
+    if (!user) return NextResponse.json({ error: 'Log in to vote on questions.' }, { status: 401 })
 
     const body = await request.json()
-    const { vote } = body // 'up' or 'down'
-
-    if (!['up', 'down'].includes(vote)) {
-      return NextResponse.json({ error: 'Invalid vote' }, { status: 400 })
+    if (body.vote !== 'up' && body.vote !== 'down') {
+      return NextResponse.json({ error: 'Vote must be "up" or "down".' }, { status: 400 })
     }
 
-    // Check existing vote
-    const { data: existingVote } = await supabase
-      .from('likes')
+    const { data: question, error: questionError } = await supabase
+      .from('questions')
       .select('id')
+      .eq('id', params.id)
+      .maybeSingle()
+    if (questionError) throw questionError
+    if (!question) return NextResponse.json({ error: 'Question not found.' }, { status: 404 })
+
+    const { data: existingVote, error: existingVoteError } = await supabase
+      .from('question_votes')
+      .select('vote')
       .eq('user_id', user.id)
       .eq('question_id', params.id)
-      .single()
+      .maybeSingle()
+    if (existingVoteError) throw existingVoteError
 
-    if (existingVote) {
-      // Update existing vote
-      const { error } = await supabase
-        .from('likes')
-        .update({ vote }) // Note: we'd need a vote column on likes table
+    if (existingVote?.vote === body.vote) {
+      const { error } = await supabase.from('question_votes')
+        .delete()
         .eq('user_id', user.id)
         .eq('question_id', params.id)
-
       if (error) throw error
-    } else {
-      // Create new vote - we need to handle this differently since likes table doesn't have vote column
-      // For simplicity, we'll use a separate approach - maybe add a vote column or use separate table
-      // For now, let's just use the likes table with a vote direction
-      return NextResponse.json({ error: 'Vote system needs likes table update' }, { status: 500 })
+      return NextResponse.json({ vote: null })
     }
 
-    return NextResponse.json({ success: true })
+    const { error } = await supabase.from('question_votes').upsert({
+      user_id: user.id,
+      question_id: params.id,
+      vote: body.vote,
+    }, { onConflict: 'user_id,question_id' })
+    if (error) throw error
+
+    return NextResponse.json({ vote: body.vote })
   } catch (error) {
     console.error('Error voting on question:', error)
-    return NextResponse.json({ error: 'Failed to vote' }, { status: 500 })
+    const details = error instanceof Error ? error.message : 'Unexpected database error'
+    if (details.includes('question_votes')) {
+      return NextResponse.json({ error: 'Run supabase/community-interactions.sql in Supabase to enable voting.' }, { status: 500 })
+    }
+    return NextResponse.json({ error: 'Failed to vote on question.', details }, { status: 500 })
   }
 }

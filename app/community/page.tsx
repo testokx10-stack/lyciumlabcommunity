@@ -4,15 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Heart, MessageCircle, Share2, ImagePlus, Send, TrendingUp, HelpCircle, Users, Flame, BadgeCheck, Bookmark, X } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { FollowButton } from '@/components/site/follow-button';
 import { COMMUNITY_MEDIA_ACCEPT, getCommunityMediaType, MAX_COMMUNITY_MEDIA_SIZE } from '@/lib/community-media';
 import { removeCommunityMedia, uploadCommunityMedia } from '@/lib/community-media-client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import { MemberCard } from '@/components/site/member-card';
-import { questions, members, getMember, formatCount, timeAgo } from '@/lib/data';
+import { questions, members, formatCount, timeAgo } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
 const tabs = [
@@ -42,11 +42,30 @@ type FeedPost = {
   } | null;
 };
 
+type CommunityQuestion = {
+  id: string;
+  title: string;
+  body: string;
+  tag: string;
+  answered: boolean;
+  created_at: string;
+  views_count: number;
+  answers_count: number;
+  votes_count: number;
+  user_vote: 'up' | 'down' | null;
+  author: {
+    id: string;
+    username: string | null;
+    full_name: string | null;
+    avatar_url: string | null;
+    role: string | null;
+  } | null;
+};
+
 export default function CommunityPage() {
   const { user, loading: authLoading } = useAuth();
   const [tab, setTab] = useState('feed');
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
-  const [followedUsers, setFollowedUsers] = useState<Set<string>>(new Set());
   const [bookmarkedPosts, setBookmarkedPosts] = useState<Set<string>>(new Set());
   const [feedPosts, setFeedPosts] = useState<FeedPost[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
@@ -56,6 +75,10 @@ export default function CommunityPage() {
   const [posting, setPosting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [postError, setPostError] = useState('');
+  const [communityQuestions, setCommunityQuestions] = useState<CommunityQuestion[]>([]);
+  const [questionsLoading, setQuestionsLoading] = useState(false);
+  const [questionError, setQuestionError] = useState('');
+  const [questionPosting, setQuestionPosting] = useState(false);
   const mediaInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -78,6 +101,29 @@ export default function CommunityPage() {
 
     void loadPosts();
   }, []);
+
+  useEffect(() => {
+    if (tab !== 'qa') return;
+    let active = true;
+    setQuestionsLoading(true);
+    fetch('/api/questions?limit=50')
+      .then(async (response) => {
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Impossible de charger les questions.');
+        if (active) {
+          setCommunityQuestions(result.questions || []);
+          setQuestionError('');
+        }
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to load questions:', error);
+        if (active) setQuestionError(error instanceof Error ? error.message : 'Impossible de charger les questions.');
+      })
+      .finally(() => {
+        if (active) setQuestionsLoading(false);
+      });
+    return () => { active = false; };
+  }, [tab]);
 
   const toggleLike = async (postId: string) => {
     try {
@@ -102,34 +148,6 @@ export default function CommunityPage() {
       else next.add(postId);
       return next;
     });
-  };
-
-  const toggleFollow = async (userId: string) => {
-    try {
-      const res = await fetch(`/api/follows/${userId}`, { method: 'POST' });
-      if (res.ok) {
-        setFollowedUsers(prev => {
-          const next = new Set(prev);
-          if (next.has(userId)) next.delete(userId);
-          else next.add(userId);
-          return next;
-        });
-      }
-    } catch (e) {
-      console.error('Failed to toggle follow:', e);
-    }
-  };
-
-  const toggleVote = async (questionId: string, vote: 'up' | 'down') => {
-    try {
-      await fetch(`/api/questions/${questionId}/votes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ vote })
-      });
-    } catch (e) {
-      console.error('Failed to vote:', e);
-    }
   };
 
   const submitPost = async (content: string, media: File | null) => {
@@ -168,76 +186,56 @@ export default function CommunityPage() {
     }
   };
 
-  const submitComment = async (postId: string, content: string) => {
-    if (!content.trim()) return;
-    try {
-      await fetch(`/api/posts/${postId}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content })
-      });
-    } catch (e) {
-      console.error('Failed to comment:', e);
-    }
-  };
-
   const submitQuestion = async (title: string, body: string, tag: string) => {
-    if (!title.trim() || !body.trim() || !tag) return;
+    if (!title.trim() || !body.trim() || !tag || questionPosting) return false;
+    setQuestionPosting(true);
+    setQuestionError('');
     try {
-      await fetch('/api/questions', {
+      const response = await fetch('/api/questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, body, tag })
       });
-    } catch (e) {
-      console.error('Failed to post question:', e);
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Impossible de publier la question.');
+      setCommunityQuestions((previous) => [{
+        ...result.question,
+        answers_count: 0,
+        votes_count: 0,
+        user_vote: null,
+      }, ...previous]);
+      return true;
+    } catch (error) {
+      console.error('Failed to post question:', error);
+      setQuestionError(error instanceof Error ? error.message : 'Impossible de publier la question.');
+      return false;
+    } finally {
+      setQuestionPosting(false);
     }
   };
 
   const voteQuestion = async (questionId: string, vote: 'up' | 'down') => {
     try {
-      await fetch(`/api/questions/${questionId}/votes`, {
+      const response = await fetch(`/api/questions/${questionId}/votes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ vote })
       });
-    } catch (e) {
-      console.error('Failed to vote:', e);
-    }
-  };
-
-  const submitAnswer = async (questionId: string, body: string) => {
-    if (!body.trim()) return;
-    try {
-      await fetch(`/api/questions/${questionId}/answers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body })
-      });
-    } catch (e) {
-      console.error('Failed to answer:', e);
-    }
-  };
-
-  const toggleFollowUser = async (userId: string) => {
-    try {
-      await fetch(`/api/follows/${userId}`, { method: 'POST' });
-      setFollowedUsers(prev => {
-        const next = new Set(prev);
-        if (next.has(userId)) next.delete(userId);
-        else next.add(userId);
-        return next;
-      });
-    } catch (e) {
-      console.error('Failed to toggle follow:', e);
-    }
-  };
-
-  const toggleSubscribe = async (videoId: string) => {
-    try {
-      await fetch(`/api/follows/${videoId}/video`, { method: 'POST' });
-    } catch (e) {
-      console.error('Failed to subscribe:', e);
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Impossible de voter.');
+      setCommunityQuestions((previous) => previous.map((question) => {
+        if (question.id !== questionId) return question;
+        const score = (value: 'up' | 'down' | null) => value === 'up' ? 1 : value === 'down' ? -1 : 0;
+        return {
+          ...question,
+          votes_count: question.votes_count + score(result.vote) - score(question.user_vote),
+          user_vote: result.vote,
+        };
+      }));
+      setQuestionError('');
+    } catch (error) {
+      console.error('Failed to vote:', error);
+      setQuestionError(error instanceof Error ? error.message : 'Impossible de voter.');
     }
   };
 
@@ -351,7 +349,25 @@ export default function CommunityPage() {
               <Feed posts={feedPosts} likedPosts={likedPosts} bookmarkedPosts={bookmarkedPosts} onToggleLike={toggleLike} onToggleBookmark={toggleBookmark} />
             )
           )}
-          {tab === 'qa' && <QA onVoteQuestion={voteQuestion} onSubmitQuestion={submitQuestion} />}
+          {tab === 'qa' && (
+            <QA
+              user={user}
+              authLoading={authLoading}
+              questions={communityQuestions}
+              loading={questionsLoading}
+              error={questionError}
+              posting={questionPosting}
+              onVoteQuestion={voteQuestion}
+              onSubmitQuestion={submitQuestion}
+              onAnswerCreated={(questionId) => {
+                setCommunityQuestions((previous) => previous.map((question) => (
+                  question.id === questionId
+                    ? { ...question, answers_count: question.answers_count + 1, answered: true }
+                    : question
+                )));
+              }}
+            />
+          )}
           {tab === 'trending' && (
             postsLoading ? (
               <p className="text-sm text-muted-foreground">Loading community posts...</p>
@@ -467,6 +483,7 @@ function Feed({
                   </Link>
                   {post.author?.username && <span className="text-sm text-muted-foreground">@{post.author.username}</span>}
                   <span className="text-sm text-muted-foreground">· {timeAgo(post.created_at)}</span>
+                  {post.author && <FollowButton profileId={post.author.id} />}
                 </div>
                 <p className="text-sm mt-2.5 leading-relaxed">{post.content}</p>
                 {(post.media_url || post.image_url) && (
@@ -518,30 +535,69 @@ function Feed({
   );
 }
 
-function QA({ onVoteQuestion, onSubmitQuestion }: { onVoteQuestion: (questionId: string, vote: 'up' | 'down') => void; onSubmitQuestion: (title: string, body: string, tag: string) => void }) {
+function QA({
+  user,
+  authLoading,
+  questions,
+  loading,
+  error,
+  posting,
+  onVoteQuestion,
+  onSubmitQuestion,
+  onAnswerCreated,
+}: {
+  user: ReturnType<typeof useAuth>['user'];
+  authLoading: boolean;
+  questions: CommunityQuestion[];
+  loading: boolean;
+  error: string;
+  posting: boolean;
+  onVoteQuestion: (questionId: string, vote: 'up' | 'down') => void;
+  onSubmitQuestion: (title: string, body: string, tag: string) => Promise<boolean>;
+  onAnswerCreated: (questionId: string) => void;
+}) {
   const [questionTitle, setQuestionTitle] = useState('');
   const [questionBody, setQuestionBody] = useState('');
   const [questionTag, setQuestionTag] = useState('');
+  const [formError, setFormError] = useState('');
 
   return (
     <div className="space-y-4">
       <Card className="p-4">
-        <div className="flex gap-3">
+        {authLoading ? <p className="text-sm text-muted-foreground">Chargement du compte...</p> : !user ? (
+          <p className="text-sm text-muted-foreground">
+            <Link href="/login" className="text-primary hover:underline">Connectez-vous</Link> pour poser une question.
+          </p>
+        ) : <div className="flex gap-3">
           <Avatar className="h-10 w-10 shrink-0">
-            <AvatarImage src={members[2].avatar} alt="You" />
-            <AvatarFallback>YT</AvatarFallback>
+            <AvatarImage src={user.user_metadata.avatar_url || undefined} alt={user.user_metadata.full_name || 'Vous'} />
+            <AvatarFallback>{(user.user_metadata.full_name || user.email || 'U').slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
-          <div className="flex-1">
+          <form className="flex-1" onSubmit={async (event) => {
+            event.preventDefault();
+            setFormError('');
+            if (!questionTitle.trim() || !questionBody.trim() || !questionTag) {
+              setFormError('Ajoutez un titre, des détails et un sujet.');
+              return;
+            }
+            if (await onSubmitQuestion(questionTitle, questionBody, questionTag)) {
+              setQuestionTitle('');
+              setQuestionBody('');
+              setQuestionTag('');
+            }
+          }}>
             <input
+              maxLength={200}
               value={questionTitle}
               onChange={(e) => setQuestionTitle(e.target.value)}
-              placeholder="Ask an agricultural or scientific question..."
+              placeholder="Posez une question agricole ou scientifique..."
               className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground border-b border-border pb-2 focus:border-primary transition-colors"
             />
             <textarea
+              maxLength={10000}
               value={questionBody}
               onChange={(e) => setQuestionBody(e.target.value)}
-              placeholder="Add details..."
+              placeholder="Ajoutez des détails..."
               className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground border-b border-border pb-2 focus:border-primary transition-colors mt-2"
               rows={3}
             />
@@ -550,65 +606,194 @@ function QA({ onVoteQuestion, onSubmitQuestion }: { onVoteQuestion: (questionId:
                 value={questionTag}
                 onChange={(e) => setQuestionTag(e.target.value)}
                 className="text-xs text-muted-foreground bg-transparent border-0 outline-none">
-                <option value="">Select a topic</option>
-                {['soil-science', 'irrigation', 'pest-management'].map((t) => <option key={t}>{t}</option>)}
+                <option value="">Choisir un sujet</option>
+                {['soil-science', 'irrigation', 'pest-management', 'crop-production', 'fertilizers', 'greenhouse', 'agtech', 'sustainable', 'research'].map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
-              <Button size="sm" className="gap-1.5" onClick={() => {
-                if (questionTitle.trim() && questionBody.trim() && questionTag) {
-                  onSubmitQuestion(questionTitle, questionBody, questionTag);
-                  setQuestionTitle('');
-                  setQuestionBody('');
-                  setQuestionTag('');
-                }
-              }}>
-                <Send size={14} /> Post question
+              <Button size="sm" type="submit" className="gap-1.5" disabled={posting}>
+                <Send size={14} /> {posting ? 'Publication...' : 'Publier la question'}
               </Button>
             </div>
-          </div>
-        </div>
+            {formError && <p role="alert" className="mt-2 text-sm text-destructive">{formError}</p>}
+          </form>
+        </div>}
       </Card>
 
-      {questions.map((q) => {
-        const author = getMember(q.authorId)!;
+      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+      {loading ? <p className="text-sm text-muted-foreground">Chargement des questions...</p> : questions.map((question) => {
+        const authorName = question.author?.full_name || question.author?.username || 'Membre';
         return (
-          <Card key={q.id} className="p-5 card-hover">
+          <Card key={question.id} className="p-5 card-hover">
             <div className="flex gap-4">
               <div className="flex flex-col items-center text-center shrink-0">
                 <button
-                  onClick={() => onVoteQuestion(q.id, 'up')}
-                  className="grid h-8 w-8 place-items-center rounded-md hover:bg-secondary text-muted-foreground hover:text-primary transition-colors">▲</button>
-                <span className="text-sm font-semibold tabular-nums my-0.5">{q.votes}</span>
+                  type="button"
+                  disabled={!user}
+                  aria-label="Voter pour cette question"
+                  onClick={() => onVoteQuestion(question.id, 'up')}
+                  className={`grid h-8 w-8 place-items-center rounded-md hover:bg-secondary hover:text-primary transition-colors ${question.user_vote === 'up' ? 'text-primary' : 'text-muted-foreground'}`}>▲</button>
+                <span className="text-sm font-semibold tabular-nums my-0.5">{question.votes_count}</span>
                 <button
-                  onClick={() => onVoteQuestion(q.id, 'down')}
-                  className="grid h-8 w-8 place-items-center rounded-md hover:bg-secondary text-muted-foreground hover:text-primary transition-colors">▼</button>
+                  type="button"
+                  disabled={!user}
+                  aria-label="Voter contre cette question"
+                  onClick={() => onVoteQuestion(question.id, 'down')}
+                  className={`grid h-8 w-8 place-items-center rounded-md hover:bg-secondary hover:text-primary transition-colors ${question.user_vote === 'down' ? 'text-primary' : 'text-muted-foreground'}`}>▼</button>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant={q.answered ? 'default' : 'secondary'} className={q.answered ? 'gap-1 bg-accent border-0' : 'font-normal'}>
-                    {q.answered ? 'Répondu' : 'Ouverte'}
+                  <Badge variant={question.answered ? 'default' : 'secondary'} className={question.answered ? 'gap-1 bg-accent border-0' : 'font-normal'}>
+                    {question.answered ? 'Répondue' : 'Ouverte'}
                   </Badge>
-                  <Badge variant="outline" className="font-normal">#{q.tag}</Badge>
+                  <Badge variant="outline" className="font-normal">#{question.tag}</Badge>
                 </div>
-                <h3 className="font-medium text-lg leading-snug mt-2 hover:text-primary transition-colors cursor-pointer">{q.title}</h3>
-                <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed line-clamp-2">{q.body}</p>
+                <h3 className="font-medium text-lg leading-snug mt-2">{question.title}</h3>
+                <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed whitespace-pre-wrap">{question.body}</p>
                 <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
                   <Avatar className="h-5 w-5">
-                    <AvatarImage src={author.avatar} alt={author.name} />
-                    <AvatarFallback>{author.name.slice(0, 2)}</AvatarFallback>
+                    <AvatarImage src={question.author?.avatar_url || undefined} alt={authorName} />
+                    <AvatarFallback>{authorName.slice(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
-                  <span>{author.name}</span>
+                  <span>{authorName}</span>
                   <span>·</span>
-                  <span className="tabular-nums">{q.answers} réponses</span>
+                  <span className="tabular-nums">{question.answers_count} réponses</span>
                   <span>·</span>
-                  <span className="tabular-nums">{formatCount(q.views)} vues</span>
+                  <span className="tabular-nums">{formatCount(question.views_count)} vues</span>
                   <span>·</span>
-                  <span>{timeAgo(q.askedAt)}</span>
+                  <span>{timeAgo(question.created_at)}</span>
                 </div>
+                {!user && <p className="mt-3 text-xs text-muted-foreground"><Link href="/login" className="text-primary hover:underline">Connectez-vous</Link> pour voter ou répondre.</p>}
+                <QuestionAnswers questionId={question.id} user={user} onAnswerCreated={() => onAnswerCreated(question.id)} />
               </div>
             </div>
           </Card>
         );
       })}
+      {!loading && !questions.length && <p className="text-sm text-muted-foreground">Aucune question pour le moment. Posez la première !</p>}
+    </div>
+  );
+}
+
+type QuestionAnswer = {
+  id: string;
+  body: string;
+  created_at: string;
+  votes_count: number;
+  user_vote: 'up' | 'down' | null;
+  author: { full_name: string | null; username: string | null; avatar_url: string | null } | null;
+};
+
+function QuestionAnswers({
+  questionId,
+  user,
+  onAnswerCreated,
+}: {
+  questionId: string;
+  user: ReturnType<typeof useAuth>['user'];
+  onAnswerCreated: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [answers, setAnswers] = useState<QuestionAnswer[]>([]);
+  const [body, setBody] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const loadAnswers = async () => {
+    setOpen(true);
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch(`/api/questions/${questionId}/answers`);
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Impossible de charger les réponses.');
+      setAnswers(result.answers || []);
+    } catch (requestError) {
+      console.error('Failed to load answers:', requestError);
+      setError(requestError instanceof Error ? requestError.message : 'Impossible de charger les réponses.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitAnswer = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!body.trim() || submitting) return;
+    setSubmitting(true);
+    setError('');
+    try {
+      const response = await fetch(`/api/questions/${questionId}/answers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Impossible de publier la réponse.');
+      setAnswers((previous) => [...previous, { ...result.answer, votes_count: 0, user_vote: null }]);
+      onAnswerCreated();
+      setBody('');
+    } catch (requestError) {
+      console.error('Failed to submit answer:', requestError);
+      setError(requestError instanceof Error ? requestError.message : 'Impossible de publier la réponse.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const voteAnswer = async (answerId: string, vote: 'up' | 'down') => {
+    try {
+      const response = await fetch(`/api/answers/${answerId}/votes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vote }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Impossible de voter.');
+      setAnswers((previous) => previous.map((answer) => {
+        if (answer.id !== answerId) return answer;
+        const score = (value: 'up' | 'down' | null) => value === 'up' ? 1 : value === 'down' ? -1 : 0;
+        return { ...answer, votes_count: answer.votes_count + score(result.vote) - score(answer.user_vote), user_vote: result.vote };
+      }));
+    } catch (requestError) {
+      console.error('Failed to vote on answer:', requestError);
+      setError(requestError instanceof Error ? requestError.message : 'Impossible de voter.');
+    }
+  };
+
+  return (
+    <div className="mt-4">
+      <Button type="button" size="sm" variant="outline" onClick={open ? () => setOpen(false) : loadAnswers}>
+        {open ? 'Masquer les réponses' : 'Voir les réponses'}
+      </Button>
+      {open && (
+        <div className="mt-3 space-y-3">
+          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+          {loading ? <p className="text-sm text-muted-foreground">Chargement des réponses...</p> : answers.map((answer) => {
+            const name = answer.author?.full_name || answer.author?.username || 'Membre';
+            return (
+              <div key={answer.id} className="rounded-lg bg-secondary/40 p-3">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Avatar className="h-6 w-6"><AvatarImage src={answer.author?.avatar_url || undefined} /><AvatarFallback>{name.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar>
+                  <span className="font-medium text-foreground">{name}</span>
+                  <span>{timeAgo(answer.created_at)}</span>
+                </div>
+                <p className="mt-2 whitespace-pre-wrap text-sm">{answer.body}</p>
+                <div className="mt-2 flex items-center gap-2 text-xs">
+                  <button type="button" disabled={!user} onClick={() => void voteAnswer(answer.id, 'up')} aria-label="Voter pour cette réponse" className={answer.user_vote === 'up' ? 'text-primary' : 'text-muted-foreground'}>▲</button>
+                  <span>{answer.votes_count}</span>
+                  <button type="button" disabled={!user} onClick={() => void voteAnswer(answer.id, 'down')} aria-label="Voter contre cette réponse" className={answer.user_vote === 'down' ? 'text-primary' : 'text-muted-foreground'}>▼</button>
+                </div>
+              </div>
+            );
+          })}
+          {!loading && !answers.length && <p className="text-sm text-muted-foreground">Pas encore de réponse.</p>}
+          {user ? (
+            <form onSubmit={submitAnswer} className="space-y-2">
+              <textarea value={body} onChange={(event) => setBody(event.target.value)} maxLength={10000} rows={2} placeholder="Écrivez une réponse..." className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              <Button type="submit" size="sm" disabled={!body.trim() || submitting}>{submitting ? 'Publication...' : 'Répondre'}</Button>
+            </form>
+          ) : <p className="text-sm text-muted-foreground"><Link href="/login" className="text-primary hover:underline">Connectez-vous</Link> pour répondre.</p>}
+        </div>
+      )}
     </div>
   );
 }

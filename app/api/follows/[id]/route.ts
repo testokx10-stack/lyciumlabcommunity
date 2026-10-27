@@ -19,13 +19,23 @@ export async function POST(
       return NextResponse.json({ error: 'Cannot follow yourself' }, { status: 400 })
     }
 
-    // Check if already following
-    const { data: existingFollow } = await supabase
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', params.id)
+      .maybeSingle()
+    if (profileError) throw profileError
+    if (!profile) {
+      return NextResponse.json({ error: 'This member does not have an account you can follow.' }, { status: 404 })
+    }
+
+    const { data: existingFollow, error: followError } = await supabase
       .from('follows')
       .select('id')
       .eq('follower_id', user.id)
       .eq('following_id', params.id)
-      .single()
+      .maybeSingle()
+    if (followError) throw followError
 
     if (existingFollow) {
       // Unfollow
@@ -50,7 +60,7 @@ export async function POST(
       if (error) throw error
 
       // Create notification
-      await supabase
+      const { error: notificationError } = await supabase
         .from('notifications')
         .insert({
           user_id: params.id,
@@ -58,6 +68,7 @@ export async function POST(
           reference_id: user.id,
           actor_id: user.id
         })
+      if (notificationError) console.error('Failed to notify followed user:', notificationError)
 
       return NextResponse.json({ following: true })
     }
@@ -73,17 +84,26 @@ export async function GET(
 ) {
   try {
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError) throw authError
 
-    // Check if user is following this profile
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', params.id)
+      .maybeSingle()
+    if (profileError) throw profileError
+    if (!profile) return NextResponse.json({ error: 'Profile not found.' }, { status: 404 })
+
     let following = false
     if (user) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('follows')
         .select('id')
         .eq('follower_id', user.id)
         .eq('following_id', params.id)
-        .single()
+        .maybeSingle()
+      if (error) throw error
       following = !!data
     }
 
@@ -92,6 +112,7 @@ export async function GET(
       supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', params.id),
       supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', params.id)
     ])
+    if (counts.some((result) => result.error)) throw counts.find((result) => result.error)?.error
     const followersCount = counts[0].count || 0
     const followingCount = counts[1].count || 0
 

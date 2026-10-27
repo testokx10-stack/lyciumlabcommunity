@@ -23,6 +23,9 @@ type ProfilePost = {
   content: string;
   tag: string | null;
   created_at: string;
+  image_url: string | null;
+  media_url: string | null;
+  media_type: 'image' | 'video' | null;
 };
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -59,7 +62,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
     profile = data;
     const { data: posts, error: postsError } = await supabase
       .from('posts')
-      .select('id, content, tag, created_at')
+      .select('id, content, tag, created_at, image_url, media_url, media_type')
       .eq('author_id', params.id)
       .order('created_at', { ascending: false })
       .limit(50);
@@ -112,6 +115,15 @@ export default async function ProfilePage({ params }: { params: { id: string } }
           {profilePosts.length ? profilePosts.map((post) => (
             <Card key={post.id} className="p-5">
               <p className="whitespace-pre-wrap leading-relaxed">{post.content}</p>
+              {(post.media_url || post.image_url) && (
+                post.media_type === 'video' ? (
+                  <video src={post.media_url || undefined} controls preload="metadata" className="mt-3 w-full max-h-[28rem] rounded-xl bg-black">
+                    Your browser does not support embedded videos.
+                  </video>
+                ) : (
+                  <img src={post.media_url || post.image_url || ''} alt="" className="mt-3 w-full max-h-80 rounded-xl object-cover" loading="lazy" />
+                )
+              )}
               {post.tag && <Badge variant="secondary" className="mt-3 font-normal">#{post.tag}</Badge>}
               <p className="mt-3 text-xs text-muted-foreground">{timeAgo(post.created_at)}</p>
             </Card>

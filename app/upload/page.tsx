@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Link2, Video } from 'lucide-react';
+import { ArrowRight, Link2, Video, X } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { MAX_COMMUNITY_MEDIA_SIZE } from '@/lib/community-media';
+import { removeCommunityMedia, uploadCommunityMedia } from '@/lib/community-media-client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,6 +19,8 @@ export default function UploadPage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -27,27 +31,47 @@ export default function UploadPage() {
     const description = String(formData.get('description') || '').trim();
     const videoUrl = String(formData.get('videoUrl') || '').trim();
     const category = String(formData.get('category') || '').trim();
-    let parsedUrl: URL;
+    let parsedUrl: URL | null = null;
 
-    try {
-      parsedUrl = new URL(videoUrl);
-    } catch {
-      setError('Enter a valid video link.');
+    if (!selectedVideo && !videoUrl) {
+      setError('Choose a video file or paste a video link.');
       return;
     }
 
-    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-      setError('The video link must start with http:// or https://.');
+    if (videoUrl) {
+      try {
+        parsedUrl = new URL(videoUrl);
+      } catch {
+        setError('Enter a valid video link.');
+        return;
+      }
+
+      if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+        setError('The video link must start with http:// or https://.');
+        return;
+      }
+    }
+
+    if (selectedVideo && selectedVideo.size > MAX_COMMUNITY_MEDIA_SIZE) {
+      setError('Videos must be 50 MB or smaller.');
       return;
     }
 
     setSubmitting(true);
+    let uploadedMediaPath: string | undefined;
     try {
+      const uploadedMedia = selectedVideo && user
+        ? await uploadCommunityMedia(selectedVideo, user, setUploadProgress)
+        : null;
+      uploadedMediaPath = uploadedMedia?.path;
       const response = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          content: `🎥 ${title}\n\n${description}\n\nVideo: ${parsedUrl.toString()}`,
+          content: `🎥 ${title}\n\n${description}`,
+          media_path: uploadedMedia?.path,
+          media_type: 'video',
+          media_url: parsedUrl?.toString(),
           tag: category,
         }),
       });
@@ -60,8 +84,10 @@ export default function UploadPage() {
       router.refresh();
     } catch (submitError) {
       console.error('Failed to share video:', submitError);
+      if (uploadedMediaPath) await removeCommunityMedia(uploadedMediaPath);
       setError(submitError instanceof Error ? submitError.message : 'Unable to share your video. Please try again.');
       setSubmitting(false);
+      setUploadProgress(null);
     }
   };
 
@@ -73,7 +99,7 @@ export default function UploadPage() {
         </div>
         <h1 className="font-display text-3xl font-semibold tracking-tight">Share a video</h1>
         <p className="mt-2 text-muted-foreground">
-          Share a video link with the Lycium Lab community.
+          Upload a video from your device or share a link with the Lycium Lab community.
         </p>
       </div>
 
@@ -92,7 +118,7 @@ export default function UploadPage() {
           <>
             <p className="mb-6 flex items-start gap-2 rounded-lg bg-secondary/60 p-3 text-sm text-muted-foreground">
               <Link2 size={16} className="mt-0.5 shrink-0" />
-              Paste a link to a video hosted online. Direct video-file uploads aren’t configured yet.
+              Device uploads support MP4, WebM, and MOV videos up to 50 MB. Larger files can be shared as a hosted link.
             </p>
             <form className="space-y-5" onSubmit={handleSubmit}>
               <div className="space-y-2">
@@ -104,8 +130,71 @@ export default function UploadPage() {
                 <Textarea id="description" name="description" maxLength={2000} rows={4} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="videoUrl">Video link</Label>
-                <Input id="videoUrl" name="videoUrl" type="url" placeholder="https://..." required />
+                <Label htmlFor="videoFile">Upload video from your device</Label>
+                <Input
+                  id="videoFile"
+                  name="videoFile"
+                  type="file"
+                  accept="video/mp4,video/webm,video/quicktime"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0] || null;
+                    if (file && !file.size) {
+                      setError('That file is empty. Choose another video.');
+                      event.target.value = '';
+                      setSelectedVideo(null);
+                      return;
+                    }
+                    if (file && !['video/mp4', 'video/webm', 'video/quicktime'].includes(file.type)) {
+                      setError('Choose an MP4, WebM, or MOV video.');
+                      event.target.value = '';
+                      setSelectedVideo(null);
+                      return;
+                    }
+                    if (file && file.size > MAX_COMMUNITY_MEDIA_SIZE) {
+                      setError('Videos must be 50 MB or smaller.');
+                      event.target.value = '';
+                      setSelectedVideo(null);
+                      return;
+                    }
+                    setError('');
+                    setSelectedVideo(file);
+                    if (file) {
+                      const linkInput = document.getElementById('videoUrl') as HTMLInputElement | null;
+                      if (linkInput) linkInput.value = '';
+                    }
+                  }}
+                  disabled={submitting}
+                />
+                {selectedVideo && (
+                  <p className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                    <span className="truncate">{selectedVideo.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedVideo(null)}
+                      aria-label="Remove video"
+                      className="shrink-0 rounded p-1 hover:bg-secondary"
+                    >
+                      <X size={16} />
+                    </button>
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="videoUrl">Or share a video link</Label>
+                <Input
+                  id="videoUrl"
+                  name="videoUrl"
+                  type="url"
+                  placeholder="https://..."
+                  disabled={submitting}
+                  onChange={(event) => {
+                    if (event.target.value) {
+                      setSelectedVideo(null);
+                      const fileInput = document.getElementById('videoFile') as HTMLInputElement | null;
+                      if (fileInput) fileInput.value = '';
+                    }
+                  }}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="category">Topic</Label>
@@ -124,7 +213,9 @@ export default function UploadPage() {
               </div>
               {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
               <Button type="submit" className="gap-2" disabled={submitting}>
-                {submitting ? 'Sharing...' : 'Share with community'} <ArrowRight size={16} />
+                {submitting
+                  ? uploadProgress !== null ? `Uploading ${uploadProgress}%` : 'Sharing...'
+                  : 'Share with community'} <ArrowRight size={16} />
               </Button>
             </form>
           </>

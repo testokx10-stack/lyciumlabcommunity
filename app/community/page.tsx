@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Heart, MessageCircle, Share2, ImagePlus, Send, TrendingUp, HelpCircle, Users, Flame, BadgeCheck, Bookmark } from 'lucide-react';
+import { Heart, MessageCircle, Share2, ImagePlus, Send, TrendingUp, HelpCircle, Users, Flame, BadgeCheck, Bookmark, X } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { COMMUNITY_MEDIA_ACCEPT, getCommunityMediaType, MAX_COMMUNITY_MEDIA_SIZE } from '@/lib/community-media';
+import { removeCommunityMedia, uploadCommunityMedia } from '@/lib/community-media-client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +26,8 @@ type FeedPost = {
   author_id: string;
   content: string;
   image_url: string | null;
+  media_url: string | null;
+  media_type: 'image' | 'video' | null;
   tag: string | null;
   likes_count: number;
   comments_count: number;
@@ -48,8 +52,11 @@ export default function CommunityPage() {
   const [postsLoading, setPostsLoading] = useState(true);
   const [postsError, setPostsError] = useState('');
   const [postContent, setPostContent] = useState('');
+  const [selectedMedia, setSelectedMedia] = useState<File | null>(null);
   const [posting, setPosting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [postError, setPostError] = useState('');
+  const mediaInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const loadPosts = async () => {
@@ -125,28 +132,39 @@ export default function CommunityPage() {
     }
   };
 
-  const submitPost = async (content: string) => {
-    if (!content.trim() || posting) return false;
+  const submitPost = async (content: string, media: File | null) => {
+    if ((!content.trim() && !media) || posting || !user) return false;
     setPostError('');
     setPosting(true);
+    let uploadedMediaPath: string | undefined;
     try {
+      const uploadedMedia = media ? await uploadCommunityMedia(media, user, setUploadProgress) : null;
+      uploadedMediaPath = uploadedMedia?.path;
       const response = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content })
+        body: JSON.stringify({
+          content,
+          media_path: uploadedMedia?.path,
+          media_type: uploadedMedia?.mediaType,
+        })
       });
       const result = await response.json();
       if (!response.ok) {
         throw new Error(result.error || 'Impossible de publier. Veuillez réessayer.');
       }
       setFeedPosts(prev => [result.post, ...prev]);
+      setSelectedMedia(null);
+      setPostContent('');
       return true;
     } catch (e) {
       console.error('Failed to post:', e);
+      if (uploadedMediaPath) await removeCommunityMedia(uploadedMediaPath);
       setPostError(e instanceof Error ? e.message : 'Impossible de publier. Veuillez réessayer.');
       return false;
     } finally {
       setPosting(false);
+      setUploadProgress(null);
     }
   };
 
@@ -267,23 +285,51 @@ export default function CommunityPage() {
                       placeholder="Share a tip, discovery, or question with the community..."
                       className="w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground min-h-[48px]"
                     />
+                    {selectedMedia && (
+                      <SelectedMediaPreview file={selectedMedia} onRemove={() => setSelectedMedia(null)} />
+                    )}
                     {postError && <p role="alert" className="text-sm text-destructive mt-2">{postError}</p>}
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex gap-1">
-                        <Button type="button" variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" disabled>
-                          <ImagePlus size={16} /> Photo
+                        <input
+                          ref={mediaInputRef}
+                          type="file"
+                          accept={COMMUNITY_MEDIA_ACCEPT}
+                          className="hidden"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0] || null;
+                            event.target.value = '';
+                            if (!file) return;
+                            if (!file.size) {
+                              setPostError('That file is empty. Choose another image or video.');
+                              return;
+                            }
+                            if (!getCommunityMediaType(file)) {
+                              setPostError('Choose a JPEG, PNG, GIF, or WebP image, or an MP4, WebM, or MOV video.');
+                              return;
+                            }
+                            if (file.size > MAX_COMMUNITY_MEDIA_SIZE) {
+                              setPostError('Files must be 50 MB or smaller.');
+                              return;
+                            }
+                            setPostError('');
+                            setSelectedMedia(file);
+                          }}
+                        />
+                        <Button type="button" variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" onClick={() => mediaInputRef.current?.click()}>
+                          <ImagePlus size={16} /> Photo or video
                         </Button>
                       </div>
                       <Button
                         type="button"
                         size="sm"
                         className="gap-1.5"
-                        disabled={!postContent.trim() || posting}
+                        disabled={(!postContent.trim() && !selectedMedia) || posting}
                         onClick={async () => {
-                          if (await submitPost(postContent)) setPostContent('');
+                          await submitPost(postContent, selectedMedia);
                         }}
                       >
-                        <Send size={15} /> {posting ? 'Publishing...' : 'Post'}
+                        <Send size={15} /> {posting ? (uploadProgress !== null ? `Uploading ${uploadProgress}%` : 'Publishing...') : 'Post'}
                       </Button>
                     </div>
                   </div>
@@ -353,6 +399,33 @@ export default function CommunityPage() {
   );
 }
 
+function SelectedMediaPreview({ file, onRemove }: { file: File; onRemove: () => void }) {
+  const [previewUrl, setPreviewUrl] = useState('');
+  const mediaType = getCommunityMediaType(file);
+
+  useEffect(() => {
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  return (
+    <div className="relative mt-3 max-w-md overflow-hidden rounded-xl border border-border/60 bg-secondary/30">
+      {previewUrl && mediaType === 'video' ? (
+        <video src={previewUrl} controls preload="metadata" className="max-h-64 w-full bg-black" />
+      ) : previewUrl ? (
+        <img src={previewUrl} alt="Selected post attachment preview" className="max-h-64 w-full object-contain" />
+      ) : null}
+      <div className="flex items-center justify-between gap-3 p-2 text-xs text-muted-foreground">
+        <span className="truncate">{file.name}</span>
+        <button type="button" onClick={onRemove} aria-label="Remove attachment" className="shrink-0 rounded p-1 hover:bg-secondary">
+          <X size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Feed({
   trendingOnly = false,
   posts,
@@ -396,10 +469,21 @@ function Feed({
                   <span className="text-sm text-muted-foreground">· {timeAgo(post.created_at)}</span>
                 </div>
                 <p className="text-sm mt-2.5 leading-relaxed">{post.content}</p>
-                {post.image_url && (
-                  <div className="mt-3 rounded-xl overflow-hidden border border-border/60">
-                    <img src={post.image_url} alt="" className="w-full max-h-80 object-cover" loading="lazy" />
-                  </div>
+                {(post.media_url || post.image_url) && (
+                  post.media_type === 'video' ? (
+                    <video
+                      src={post.media_url || undefined}
+                      controls
+                      preload="metadata"
+                      className="mt-3 w-full max-h-[28rem] rounded-xl border border-border/60 bg-black"
+                    >
+                      Your browser does not support embedded videos.
+                    </video>
+                  ) : (
+                    <div className="mt-3 overflow-hidden rounded-xl border border-border/60">
+                      <img src={post.media_url || post.image_url || ''} alt="" className="w-full max-h-80 object-cover" loading="lazy" />
+                    </div>
+                  )
                 )}
                 {post.tag && (
                   <Badge variant="secondary" className="mt-3 font-normal">#{post.tag}</Badge>

@@ -20,6 +20,8 @@ CREATE TABLE posts (
   author_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   content TEXT NOT NULL,
   image_url TEXT,
+  media_url TEXT,
+  media_type TEXT CHECK (media_type IN ('image', 'video')),
   tag TEXT,
   likes_count INTEGER DEFAULT 0,
   comments_count INTEGER DEFAULT 0,
@@ -231,3 +233,38 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Community photo and video uploads
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'community-media',
+  'community-media',
+  TRUE,
+  52428800,
+  ARRAY['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime']
+)
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+DROP POLICY IF EXISTS "Community media is publicly viewable" ON storage.objects;
+CREATE POLICY "Community media is publicly viewable"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'community-media');
+
+DROP POLICY IF EXISTS "Users can upload their own community media" ON storage.objects;
+CREATE POLICY "Users can upload their own community media"
+  ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (
+    bucket_id = 'community-media'
+    AND (storage.foldername(name))[1] = (SELECT auth.uid())::text
+  );
+
+DROP POLICY IF EXISTS "Users can delete their own community media" ON storage.objects;
+CREATE POLICY "Users can delete their own community media"
+  ON storage.objects FOR DELETE TO authenticated
+  USING (
+    bucket_id = 'community-media'
+    AND (storage.foldername(name))[1] = (SELECT auth.uid())::text
+  );

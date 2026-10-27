@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { COMMUNITY_MEDIA_BUCKET } from '@/lib/community-media'
 import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
@@ -51,10 +52,46 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { content, image_url, tag } = body
+    const { content, image_url, media_path, media_type, media_url, tag } = body
 
-    if (!content?.trim()) {
-      return NextResponse.json({ error: 'Content is required' }, { status: 400 })
+    if (typeof content !== 'string' || (!content.trim() && !media_path && !media_url)) {
+      return NextResponse.json({ error: 'Add text or an image/video to your post.' }, { status: 400 })
+    }
+
+    let resolvedMediaUrl: string | null = image_url || null
+    let resolvedMediaType: 'image' | 'video' | null = image_url ? 'image' : null
+
+    if (media_path || media_url) {
+      if (media_type !== 'image' && media_type !== 'video') {
+        return NextResponse.json({ error: 'Media must be an image or video.' }, { status: 400 })
+      }
+
+      if (media_path) {
+        if (typeof media_path !== 'string' || !media_path.startsWith(`${user.id}/`)) {
+          return NextResponse.json({ error: 'You can only attach files you uploaded.' }, { status: 403 })
+        }
+
+        const { data } = supabase.storage
+          .from(COMMUNITY_MEDIA_BUCKET)
+          .getPublicUrl(media_path)
+        resolvedMediaUrl = data.publicUrl
+        resolvedMediaType = media_type
+      } else {
+        if (typeof media_url !== 'string') {
+          return NextResponse.json({ error: 'Media URL must be a valid HTTP(S) link.' }, { status: 400 })
+        }
+        let parsedMediaUrl: URL
+        try {
+          parsedMediaUrl = new URL(media_url)
+        } catch {
+          return NextResponse.json({ error: 'Media URL must be a valid HTTP(S) link.' }, { status: 400 })
+        }
+        if (parsedMediaUrl.protocol !== 'https:' && parsedMediaUrl.protocol !== 'http:') {
+          return NextResponse.json({ error: 'Media URL must use HTTP or HTTPS.' }, { status: 400 })
+        }
+        resolvedMediaUrl = parsedMediaUrl.toString()
+        resolvedMediaType = media_type
+      }
     }
 
     const { data, error } = await supabase
@@ -62,7 +99,9 @@ export async function POST(request: Request) {
       .insert({
         author_id: user.id,
         content: content.trim(),
-        image_url,
+        image_url: resolvedMediaType === 'image' ? resolvedMediaUrl : null,
+        media_url: resolvedMediaUrl,
+        media_type: resolvedMediaType,
         tag
       })
       .select(`
@@ -76,6 +115,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ post: data }, { status: 201 })
   } catch (error) {
     console.error('Error creating post:', error)
-    return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })
+    const details = error instanceof Error ? error.message : 'Unexpected database error'
+    if (/column .*media_(url|type).* does not exist/i.test(details)) {
+      return NextResponse.json({
+        error: 'Run supabase/community-media.sql in the Supabase SQL Editor to enable media posts.',
+      }, { status: 500 })
+    }
+    return NextResponse.json({ error: 'Failed to create post', details }, { status: 500 })
   }
 }

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Search, Menu, X, Plus, Bell } from 'lucide-react';
+import { Search, Menu, X, Plus, Bell, Settings } from 'lucide-react';
 import { Logo } from './logo';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -84,10 +84,15 @@ export function SiteHeader() {
             {!authLoading && (
               user ? (
                 <div className="hidden sm:flex items-center gap-2">
-                  <Avatar className="h-8 w-8 border border-border">
-                    <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name || 'Profil'} />
-                    <AvatarFallback>{(user.user_metadata.full_name || user.email || 'U').slice(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
+                  <Link href={`/profile/${user.id}`} aria-label="Mon profil">
+                    <Avatar className="h-8 w-8 border border-border">
+                      <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name || 'Profil'} />
+                      <AvatarFallback>{(user.user_metadata.full_name || user.email || 'U').slice(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                  </Link>
+                  <Button asChild variant="ghost" size="icon" aria-label="Paramètres du compte">
+                    <Link href="/settings"><Settings size={17} /></Link>
+                  </Button>
                   <Button variant="ghost" size="sm" onClick={() => void signOut()}>Déconnexion</Button>
                 </div>
               ) : (
@@ -147,7 +152,10 @@ export function SiteHeader() {
           {!authLoading && (
             <div className="flex gap-2 mt-2">
               {user ? (
-                <Button variant="outline" size="sm" className="w-full" onClick={() => void signOut()}>Déconnexion</Button>
+                <>
+                  <Button asChild variant="outline" size="sm" className="flex-1 gap-1.5"><Link href="/settings"><Settings size={16} /> Paramètres du compte</Link></Button>
+                  <Button variant="outline" size="sm" className="flex-1" onClick={() => void signOut()}>Déconnexion</Button>
+                </>
               ) : (
                 <>
                   <Button asChild variant="outline" size="sm" className="flex-1"><Link href="/login">Connexion</Link></Button>

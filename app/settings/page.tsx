@@ -43,6 +43,11 @@ function AccountSettings() {
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleteRequesting, setDeleteRequesting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const [deleteSuccess, setDeleteSuccess] = useState('');
 
   useEffect(() => {
     if (authLoading || !user) {
@@ -200,6 +205,42 @@ function AccountSettings() {
     }
   };
 
+  const requestAccountDeletion = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!user || deleteRequesting) return;
+    setDeleteError('');
+    setDeleteSuccess('');
+
+    if (!deleteConfirm) {
+      setDeleteError('Veuillez confirmer que vous comprenez que cette demande est enregistrée pour examen avant traitement.');
+      return;
+    }
+
+    setDeleteRequesting(true);
+    try {
+      const response = await fetch('/api/account/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: deletePassword,
+          confirmed: true,
+          reason: 'User requested account deletion from account settings.',
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Impossible de demander la suppression du compte.');
+
+      setDeletePassword('');
+      setDeleteConfirm(false);
+      setDeleteSuccess(result.message || 'Votre demande de suppression a bien été enregistrée.');
+    } catch (error) {
+      console.error('Failed to request account deletion:', error);
+      setDeleteError(error instanceof Error ? error.message : 'Impossible de demander la suppression du compte.');
+    } finally {
+      setDeleteRequesting(false);
+    }
+  };
+
   if (authLoading || profileLoading) {
     return <div className="container-px mx-auto max-w-3xl py-10"><p className="text-sm text-muted-foreground">Chargement des paramètres...</p></div>;
   }
@@ -300,6 +341,34 @@ function AccountSettings() {
           {passwordSuccess && <p role="status" className="text-sm text-primary">{passwordSuccess}</p>}
           <Button type="submit" disabled={passwordSaving} className="gap-2">
             <LockKeyhole size={16} /> {passwordSaving ? 'Mise à jour...' : 'Changer le mot de passe'}
+          </Button>
+        </form>
+      </Card>
+
+      <Card className="mt-6 border-destructive/30 bg-destructive/5 p-6 sm:p-8">
+        <div className="mb-6 flex items-center gap-3">
+          <LockKeyhole className="text-destructive" size={22} />
+          <div>
+            <h2 className="font-display text-xl font-semibold text-destructive">Suppression du compte</h2>
+            <p className="text-sm text-muted-foreground">Cette action est gérée via une demande de suppression et non par une suppression immédiate, afin de respecter un processus vérifiable et sécuritaire.</p>
+          </div>
+        </div>
+
+        <form onSubmit={requestAccountDeletion} className="space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="delete-password">Mot de passe actuel</Label>
+            <Input id="delete-password" type="password" autoComplete="current-password" value={deletePassword} onChange={(event) => setDeletePassword(event.target.value)} required />
+          </div>
+          <label className="flex items-start gap-3 text-sm text-muted-foreground">
+            <input type="checkbox" checked={deleteConfirm} onChange={(event) => setDeleteConfirm(event.target.checked)} className="mt-1 h-4 w-4" />
+            <span>
+              Je confirme que je souhaite demander la suppression de mon compte et que je comprends que cette demande est enregistrée pour examen et traitement conformément à la politique de conservation du service.
+            </span>
+          </label>
+          {deleteError && <p role="alert" className="text-sm text-destructive">{deleteError}</p>}
+          {deleteSuccess && <p role="status" className="text-sm text-primary">{deleteSuccess}</p>}
+          <Button type="submit" disabled={deleteRequesting} variant="outline" className="gap-2 border-destructive text-destructive hover:text-destructive">
+            <LockKeyhole size={16} /> {deleteRequesting ? 'Demande en cours...' : 'Demander la suppression'}
           </Button>
         </form>
       </Card>

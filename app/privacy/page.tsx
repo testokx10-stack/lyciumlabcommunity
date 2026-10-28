@@ -4,53 +4,72 @@ import { Card } from '@/components/ui/card';
 export default function PrivacyPage() {
   return (
     <div className="container-px mx-auto max-w-3xl py-12">
-      <h1 className="font-display text-3xl font-semibold">Confidentialité et données personnelles</h1>
-      <p className="mt-3 text-sm text-muted-foreground">Information sur le fonctionnement actuel de Lycium Media Lab</p>
+      <h1 className="font-display text-3xl font-semibold">Politique de confidentialité</h1>
+      <p className="mt-3 text-sm text-muted-foreground">Version 1.0 · Dernière mise à jour : 28 octobre 2026</p>
+
       <Card className="mt-6 border-amber-500/40 p-5">
-        <p className="font-medium">Informations administratives à confirmer</p>
+        <p className="font-medium">Important</p>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Lycium Media Lab est exploité par Al Mahdi Mernissi au Maroc, selon les informations communiquées par le porteur. L’adresse postale, la forme juridique, les durées de conservation, les régions de traitement et les formalités applicables au Maroc restent à confirmer. Cette notice décrit les traitements connus et doit être complétée après vérification; elle ne constitue pas un avis juridique.
+          Cette notice décrit les traitements effectivement observés dans le code et les services actuellement utilisés par Lycium Media Lab. Les informations juridiques complètes (forme juridique, adresse postale, délais détaillés et formalités CNDP/ANRT) doivent être validées par le responsable du projet avant publication publique comme document final.
         </p>
       </Card>
-      <section className="mt-8 space-y-4 leading-relaxed">
-        <h2 className="font-display text-xl font-semibold">Qui traite vos données et pourquoi ?</h2>
+
+      <section className="mt-8 space-y-5 leading-relaxed">
+        <h2 className="font-display text-xl font-semibold">1. Responsable du traitement</h2>
         <p>
-          Le projet a pour objectif déclaré de partager des connaissances et d’aider les visiteurs, sans objectif de profit. Pour toute question ou demande relative à vos données, contactez Al Mahdi Mernissi à{' '}
+          Le site est exploité par Lycium Media Lab. D’après les informations disponibles dans le projet, le contact administratif est{' '}
+          <a className="text-primary underline" href="mailto:almahdi.mernissi@gmail.com">Al Mahdi Mernissi</a>{' '}
+          (Maroc). L’identité juridique complète, l’adresse postale exacte et le statut de l’entité (personne physique ou structure immatriculée) doivent encore être confirmés avant une version définitive de cette politique. Pour toute demande relative à vos données, contactez le responsable par e-mail à{' '}
+          <a className="text-primary underline" href="mailto:almahdi.mernissi@gmail.com">almahdi.mernissi@gmail.com</a>.
+        </p>
+
+        <h2 className="font-display text-xl font-semibold">2. Données collectées</h2>
+        <p>
+          Les traitements actuellement identifiés dans le site sont les suivants :
+        </p>
+        <ul className="list-disc space-y-2 pl-6">
+          <li>Informations de compte : nom complet, adresse e-mail, mot de passe, session d’authentification.</li>
+          <li>Profil utilisateur : photo, biographie, localisation ou autres éléments facultatifs si l’utilisateur les renseigne.</li>
+          <li>Contenus communautaires : publications, commentaires, réactions, signalements éventuels.</li>
+          <li>Fichiers et images : éléments téléversés ou partagés dans la communauté ou dans les profils.</li>
+          <li>Données techniques : adresse IP, journaux de sécurité, données de navigateur, cookies de session et traces nécessaires au bon fonctionnement du site.</li>
+          <li>Services tiers : YouTube/Google peuvent recevoir des données techniques lors du chargement de vignettes ou de vidéos.</li>
+        </ul>
+
+        <h2 className="font-display text-xl font-semibold">3. Finalités</h2>
+        <p>
+          Les données sont utilisées pour : créer et gérer un compte utilisateur, authentifier l’accès, faire fonctionner les échanges communautaires, modérer les contenus, gérer les profils et les fichiers, assurer la sécurité du service et répondre aux demandes des utilisateurs. Aucune analyse d’audience ciblée ou newsletter marketing n’est configurée dans le code actuel ; les communications commerciales restent désactivées par défaut.
+        </p>
+
+        <h2 className="font-display text-xl font-semibold">4. Droits des personnes concernées</h2>
+        <p>
+          Conformément à la loi marocaine n° 09-08, les personnes concernées peuvent demander l’accès à leurs données, leur rectification, leur suppression dans la mesure où le traitement le permet, et, lorsque les conditions légales le justifient, l’opposition à certains traitements. Les demandes doivent être adressées à{' '}
+          <a className="text-primary underline" href="mailto:almahdi.mernissi@gmail.com">almahdi.mernissi@gmail.com</a>{' '}
+          en indiquant le contexte, la nature de la demande et les informations nécessaires à l’identification de l’utilisateur. Une vérification d’identité peut être demandée pour prévenir un accès non autorisé aux données.
+        </p>
+
+        <h2 className="font-display text-xl font-semibold">5. Conservation et suppression</h2>
+        <p>
+          Les durées de conservation exactes doivent être confirmées avec le responsable du service et les prestataires. En l’état, les données de compte et les contenus publiés sont conservés tant que le compte est actif ou tant qu’un besoin légitime ou technique le justifie. En cas de fermeture de compte, le projet doit préciser quels contenus, commentaires, fichiers et sauvegardes sont supprimés, anonymisés ou conservés conformément aux obligations légales et techniques.
+        </p>
+
+        <h2 className="font-display text-xl font-semibold">6. Prestataires et transferts</h2>
+        <p>
+          Les prestataires actuellement identifiés sont Vercel (hébergement), Supabase (authentification, base de données et stockage de contenu communautaire) et YouTube/Google pour les vignettes et le lecteur vidéo. Les régions exactes, les sous-traitants et les éventuels transferts hors Union européenne ou hors Maroc doivent être vérifiés dans les contrats et paramètres réels du projet. Le présent site ne doit pas être présenté comme conforme uniquement parce que la base est hébergée en Europe ; la qualification juridique dépend du traitement réel, du pays de traitement et des règles applicables.
+        </p>
+
+        <h2 className="font-display text-xl font-semibold">7. Sécurité</h2>
+        <p>
+          Lycium Media Lab met en place les mesures de sécurité normalement associées à un site moderne : authentification avec Supabase, gestion de session, protection des routes et accès restreint aux ressources selon les règles du projet. Ces mesures doivent être vérifiées et documentées dans la configuration réelle de Supabase et du déploiement. La présente politique ne prétend pas à une certification de sécurité ou à l’existence d’un audit externe.
+        </p>
+
+        <h2 className="font-display text-xl font-semibold">8. Version et contact</h2>
+        <p>
+          Cette politique est mise à jour régulièrement. Elle doit être complétée avec les informations juridiques finales avant toute présentation comme la version officielle du projet. En cas de question, veuillez écrire à{' '}
           <a className="text-primary underline" href="mailto:almahdi.mernissi@gmail.com">almahdi.mernissi@gmail.com</a>.
         </p>
         <p>
-          <strong>Consultation du site :</strong> vous n’avez pas à fournir votre nom ou votre adresse e-mail pour lire les pages. Vercel, le prestataire d’hébergement, peut traiter des données techniques de requête et de sécurité, telles que l’adresse IP, afin de fournir et protéger le site. Les journaux, leur durée de conservation et les régions de traitement doivent être confirmés.
-        </p>
-        <p>
-          <strong>Création et utilisation d’un compte :</strong> l’inscription demande votre nom, votre adresse e-mail et un mot de passe. Supabase fournit l’authentification et stocke les informations nécessaires au compte; le mot de passe sert à vous authentifier. Le site utilise des mécanismes de session nécessaires au maintien de la connexion. Les réglages de cookies et de stockage du navigateur peuvent dépendre de votre navigateur et de Supabase.
-        </p>
-        <p>
-          <strong>Participation communautaire :</strong> si vous choisissez de participer, les textes publiés, commentaires et réactions sont traités pour faire fonctionner la communauté et peuvent être visibles par les autres visiteurs selon les réglages du site. Dans les paramètres du compte, vous pouvez également fournir des éléments de profil facultatifs tels qu’une biographie, une localisation ou une photo. Ne publiez pas d’information personnelle ou de contenu que vous n’êtes pas autorisé à partager. Les données de compte et les contenus associés sont hébergés via Supabase; les délais de conservation et les procédures de suppression doivent être confirmés. Vous pouvez demander de l’aide à l’adresse de contact indiquée ci-dessus.
-        </p>
-        <p>
-          <strong>Vidéos YouTube :</strong> les vignettes de la bibliothèque sont chargées depuis YouTube et peuvent transmettre à Google/YouTube des données techniques, dont votre adresse IP et des informations sur votre navigateur. Sur la page de détail, le lecteur YouTube ne se charge qu’après votre clic sur « Charger la vidéo YouTube »; YouTube peut alors utiliser ses propres cookies ou identifiants selon votre navigateur et ses réglages. Les vidéos restent hébergées par YouTube. Consultez la{' '}
-          <a className="text-primary underline" href="https://policies.google.com/privacy?hl=fr" target="_blank" rel="noreferrer">politique de confidentialité de Google</a>.
-        </p>
-        <p>
-          <strong>Mesure d’audience et prospection :</strong> le site ne propose actuellement ni formulaire de newsletter, ni publicité ciblée, ni outil d’analyse d’audience configuré par Lycium Media Lab.
-        </p>
-        <h2 className="font-display text-xl font-semibold">Prestataires, transferts et durée</h2>
-        <p>
-          Les prestataires techniques identifiés sont Vercel pour l’hébergement et Supabase pour l’authentification et les données communautaires; Google/YouTube fournit les vignettes et lecteurs vidéo. Leurs entités contractuelles, sous-traitants, lieux de traitement et transferts éventuels ne sont pas encore confirmés. Les durées de conservation précises restent également à établir. Ces informations doivent être vérifiées et précisées auprès des prestataires.
-        </p>
-        <h2 className="font-display text-xl font-semibold">Vos demandes et cadre marocain</h2>
-        <p>
-          Vous pouvez écrire à l’adresse de contact pour demander des informations, accéder à vos données, demander leur rectification ou leur suppression, ou vous opposer à un traitement lorsque cela s’applique. Une vérification proportionnée de votre identité peut être nécessaire. Le porteur doit confirmer les modalités et délais de traitement de ces demandes.
-        </p>
-        <p>
-          Les obligations de la loi marocaine n° 09-08, les formalités auprès de la{' '}
-          <a className="text-primary underline" href="https://www.cndp.ma/" target="_blank" rel="noreferrer">CNDP</a>{' '}
-          et les conditions applicables aux transferts internationaux doivent être vérifiées. L’objectif éducatif et le caractère non commercial déclaré du projet ne dispensent pas de ces vérifications.
-        </p>
-        <p>
-          Une inscription au site n’est pas une adhésion à une association. Pour les règles d’utilisation, consultez les{' '}
-          <Link href="/terms" className="text-primary underline">conditions d’utilisation</Link> et le{' '}
-          <Link href="/conduct" className="text-primary underline">code de conduite</Link>.
+          Voir aussi : <Link href="/terms" className="text-primary underline">Conditions d’utilisation</Link>, <Link href="/legal-notice" className="text-primary underline">Mentions légales</Link> et <Link href="/conduct" className="text-primary underline">Code de conduite</Link>.
         </p>
       </section>
     </div>

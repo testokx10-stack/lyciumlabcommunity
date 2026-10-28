@@ -13,7 +13,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://lyciumlabconnect.vercel.app'),
+  metadataBase: new URL('https://lyciumbiolab.vercel.app'),
   title: {
     default: 'Lycium Media Lab — Cultiver les connaissances. Privilégier l\'innovation.',
     template: '%s · Lycium Media Lab',

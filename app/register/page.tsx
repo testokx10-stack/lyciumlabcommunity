@@ -25,6 +25,8 @@ function RegistrationForm() {
   const { signUp } = useAuth();
   const router = useRouter();
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [error, setError] = useState('');
   const [confirmationSent, setConfirmationSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -33,8 +35,8 @@ function RegistrationForm() {
     event.preventDefault();
     setError('');
     setConfirmationSent(false);
-    if (!acceptedTerms) {
-      setError('Veuillez accepter les conditions pour créer votre compte.');
+    if (!acceptedTerms || !acceptedPrivacy) {
+      setError('Veuillez accepter les conditions d’utilisation et la politique de confidentialité pour créer votre compte.');
       return;
     }
 
@@ -115,13 +117,27 @@ function RegistrationForm() {
                 <p className="text-xs text-muted-foreground">Utilisez un mélange de lettres, de chiffres et de symboles.</p>
               </div>
               <p className="text-xs leading-relaxed text-muted-foreground">
-                Pour créer votre compte, nous utilisons votre nom et votre adresse e-mail. Votre mot de passe est transmis à Supabase pour l’authentification; nous ne l’utilisons pas à d’autres fins. Consultez la <Link href="/privacy" className="text-primary underline">notice de confidentialité</Link>.
+                Pour créer votre compte, nous utilisons votre nom et votre adresse e-mail. Votre mot de passe est transmis à Supabase pour l’authentification; nous ne l’utilisons pas à d’autres fins. Les communications marketing ne sont pas activées par défaut. Consultez la <Link href="/privacy" className="text-primary underline">notice de confidentialité</Link>.
               </p>
-              <div className="flex items-start gap-2">
-                <Checkbox id="terms" className="mt-0.5" checked={acceptedTerms} onCheckedChange={(checked) => setAcceptedTerms(checked === true)} />
-                <Label htmlFor="terms" className="text-sm text-muted-foreground font-normal cursor-pointer leading-relaxed">
-                  J&apos;accepte les <Link href="/terms" className="text-primary hover:underline">Conditions d&apos;utilisation</Link> et le <Link href="/conduct" className="text-primary hover:underline">Code de conduite</Link>.
-                </Label>
+              <div className="space-y-3">
+                <div className="flex items-start gap-2">
+                  <Checkbox id="privacy" className="mt-0.5" checked={acceptedPrivacy} onCheckedChange={(checked) => setAcceptedPrivacy(checked === true)} />
+                  <Label htmlFor="privacy" className="text-sm text-muted-foreground font-normal cursor-pointer leading-relaxed">
+                    J&apos;ai lu et j&apos;accepte la <Link href="/privacy" className="text-primary hover:underline">politique de confidentialité</Link>.
+                  </Label>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Checkbox id="terms" className="mt-0.5" checked={acceptedTerms} onCheckedChange={(checked) => setAcceptedTerms(checked === true)} />
+                  <Label htmlFor="terms" className="text-sm text-muted-foreground font-normal cursor-pointer leading-relaxed">
+                    J&apos;accepte les <Link href="/terms" className="text-primary hover:underline">Conditions d&apos;utilisation</Link> et le <Link href="/conduct" className="text-primary hover:underline">Code de conduite</Link>.
+                  </Label>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Checkbox id="marketing" className="mt-0.5" checked={marketingConsent} onCheckedChange={(checked) => setMarketingConsent(checked === true)} />
+                  <Label htmlFor="marketing" className="text-sm text-muted-foreground font-normal cursor-pointer leading-relaxed">
+                    Je souhaite recevoir des informations utiles du projet, si l’option est proposée à l’avenir. (Désactivé par défaut.)
+                  </Label>
+                </div>
               </div>
               {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
               {confirmationSent && <p role="status" className="text-sm text-primary">Vérifiez votre e-mail pour confirmer votre compte.</p>}
